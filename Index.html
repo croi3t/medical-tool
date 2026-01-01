@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>業務支援ツール統合メニュー</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .menu-item {
+            display: block;
+            padding: 30px 20px;
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #495057;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        .menu-item:hover {
+            border-color: #3498db;
+            background-color: #f8fbff;
+            color: #3498db;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+        }
+        .icon {
+            display: block;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        /* 各ツールのイメージカラー */
+        .color-1 .icon { color: #e74c3c; }
+        .color-2 .icon { color: #8e44ad; }
+        .color-3 .icon { color: #27ae60; }
+        
+        footer {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>業務支援ツール 統合メニュー</h1>
+        
+        <div class="menu-grid">
+            <a href="休薬確認ツール.html" class="menu-item color-1">
+                <span class="icon">💊</span>
+                術前休薬確認<br>ツール
+            </a>
+
+            <a href="配合変化ツール.html" class="menu-item color-2">
+                <span class="icon">⚗️</span>
+                配合変化<br>データベース
+            </a>
+
+            <a href="小児投与量確認ツール.html" class="menu-item color-3">
+                <span class="icon">👶</span>
+                小児用量<br>監査ツール
+            </a>
+        </div>
+
+        <footer>
+            <p>※各ファイルは本ファイルと同じフォルダ内に保存してください。</p>
+        </footer>
+    </div>
+
+</body>
+</html>
