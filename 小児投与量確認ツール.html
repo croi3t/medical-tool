@@ -200,25 +200,143 @@
     </script>
 </head>
 <body>
-    <div id="common-nav-bar" style="background:#333; padding:10px; text-align:center; margin-bottom:15px;">
+    <div id="custom-hamburger-menu">
+        <button id="menu-toggle-btn" onclick="toggleMenu()" title="メニューを開く">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    
+        <nav id="menu-content">
+            <div class="menu-header">業務支援ツール統合メニュー</div>
+            
+            <a href="index.html" class="menu-link">🏠 メニュー画面へ</a>
+            
+            <hr style="margin: 8px 0; border-color: #555;">
+            
+            <a href="休薬確認ツール.html" class="menu-link">💊 休薬確認ツール</a>
+            <a href="配合変化ツール.html" class="menu-link">⚗️ 配合変化ツール</a>
+            <a href="小児投与量確認ツール.html" class="menu-link">👶 小児用量監査</a>
+    
+            <button onclick="toggleMenu()" class="close-btn">閉じる</button>
+        </nav>
+    
         <style>
-            .nav-link-btn {
-                color: white;
-                text-decoration: none;
-                margin: 0 10px;
-                padding: 5px 10px;
-                border: 1px solid #555;
-                border-radius: 4px;
-                background: #444;
-                font-size: 14px;
-                display: inline-block;
+            /* --- 右上のボタン設定 --- */
+            #menu-toggle-btn {
+                position: fixed;
+                top: 15px;
+                right: 20px;
+                z-index: 9999; /* 最前面に表示 */
+                width: 50px;
+                height: 50px;
+                background-color: #333; /* ボタンの色 */
+                border: 2px solid #fff;
+                border-radius: 8px;
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                transition: all 0.3s;
             }
-            .nav-link-btn:hover { background: #666; }
+            #menu-toggle-btn:hover {
+                background-color: #555;
+                transform: scale(1.05);
+            }
+            /* 3本線のデザイン */
+            .bar {
+                width: 28px;
+                height: 3px;
+                background-color: white;
+                border-radius: 2px;
+            }
+    
+            /* --- 開いたときのメニューボックス --- */
+            #menu-content {
+                display: none; /* 最初は隠す */
+                position: fixed;
+                top: 75px; /* ボタンの少し下 */
+                right: 20px;
+                width: 260px;
+                background-color: #333;
+                border: 1px solid #555;
+                border-radius: 8px;
+                padding: 15px;
+                z-index: 9998;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+                flex-direction: column;
+                font-family: "Helvetica Neue", Arial, sans-serif;
+                text-align: left;
+            }
+            
+            /* メニューが表示されたときのクラス */
+            #menu-content.active {
+                display: flex;
+                animation: fadeIn 0.2s ease-out;
+            }
+    
+            /* メニュー内のデザイン */
+            .menu-header {
+                color: #aaa;
+                font-size: 12px;
+                margin-bottom: 10px;
+                text-align: center;
+                border-bottom: 1px solid #555;
+                padding-bottom: 5px;
+            }
+            .menu-link {
+                display: block;
+                color: white !important;
+                text-decoration: none;
+                padding: 12px 15px;
+                margin-bottom: 6px;
+                border-radius: 4px;
+                background-color: #444;
+                font-size: 16px;
+                font-weight: bold;
+                transition: background 0.2s;
+            }
+            .menu-link:hover {
+                background-color: #0d6efd; /* マウスを乗せたときの色(青) */
+                color: white;
+            }
+            .close-btn {
+                margin-top: 10px;
+                background: transparent;
+                border: 1px solid #777;
+                color: #ccc;
+                padding: 5px;
+                border-radius: 4px;
+                cursor: pointer;
+                width: 100%;
+                font-size: 0.9rem;
+            }
+            .close-btn:hover { background: #555; color: white; }
+    
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            /* 印刷時はボタンごと隠す */
+            @media print {
+                #custom-hamburger-menu { display: none !important; }
+            }
         </style>
-        <a href="index.html" class="nav-link-btn">🏠 メニューへ</a>
-        <a href="休薬確認ツール.html" class="nav-link-btn">休薬確認</a>
-        <a href="配合変化ツール.html" class="nav-link-btn">配合変化</a>
-        <a href="小児投与量確認ツール.html" class="nav-link-btn">小児用量</a>
+    
+        <script>
+            function toggleMenu() {
+                var menu = document.getElementById('menu-content');
+                if (menu.classList.contains('active')) {
+                    menu.classList.remove('active');
+                } else {
+                    menu.classList.add('active');
+                }
+            }
+        </script>
     </div>
 <header>
     <h1>💊 小児用量監査ツール V39</h1>
@@ -790,4 +908,5 @@
 </script>
 </body>
 </html>
+
 
