@@ -770,4 +770,24 @@
     function drawGrowthTable() { const c = document.getElementById('growthTableContainer'); let h = '<table class="common-table"><thead><tr><th>年齢</th>'; growthData.boy.forEach(p=>h+=`<th>${p[0]}</th>`); h+='</tr></thead><tbody><tr><th>男子</th>'; growthData.boy.forEach(p=>h+=`<td>${p[1]}</td>`); h+='</tr><tr><th>女子</th>'; growthData.girl.forEach(p=>h+=`<td>${p[1]}</td>`); h+='</tr></tbody></table>'; c.innerHTML = h; }
 </script>
 </body>
+<div id="common-nav-bar" style="background:#333; padding:10px; text-align:center; margin-bottom:15px;">
+    <style>
+        .nav-link-btn {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #444;
+            font-size: 14px;
+            display: inline-block;
+        }
+        .nav-link-btn:hover { background: #666; }
+    </style>
+    <a href="index.html" class="nav-link-btn">🏠 メニューへ</a>
+    <a href="休薬確認ツール.html" class="nav-link-btn">休薬確認</a>
+    <a href="配合変化ツール.html" class="nav-link-btn">配合変化</a>
+    <a href="小児投与量確認ツール.html" class="nav-link-btn">小児用量</a>
+</div>
 </html>
