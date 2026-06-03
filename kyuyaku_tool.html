@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>術前休薬確認ツール Ver40</title>
+    <style>
+        /* --- 基本設定 --- */
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
+        * { box-sizing: border-box; }
+
+        /* --- IE警告モーダル --- */
+        #ie-warning { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); z-index: 99999; align-items: center; justify-content: center; flex-direction: column; color: white; }
+        .ie-modal-content { background-color: white; color: #333; padding: 30px; border-radius: 8px; max-width: 600px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .ie-btn { display: inline-block; background-color: #0d6efd; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; font-weight: bold; cursor: pointer; }
+        .ie-url-box { background: #f0f0f0; padding: 10px; margin: 15px 0; word-break: break-all; border: 1px solid #ccc; font-family: monospace; user-select: all; }
+
+        /* UIパーツ */
+        .d-none { display: none !important; }
+        .container-main { max-width: 1800px; margin: 0 auto; background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 4px; position: relative; }
+        .h-fixed-match { height: 110px !important; }
+        
+        .btn { display: inline-block; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; border: 1px solid transparent; padding: 0.375rem 0.75rem; font-size: 1rem; border-radius: 0.25rem; transition: all 0.15s; }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        .btn-primary { color: #fff; background-color: #0d6efd; border-color: #0d6efd; }
+        .btn-primary:hover { background-color: #0b5ed7; }
+        .btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; }
+        .btn-success { color: #fff; background-color: #198754; border-color: #198754; }
+        .btn-warning { color: #000; background-color: #ffc107; border-color: #ffc107; }
+        .btn-danger { color: #fff; background-color: #dc3545; border-color: #dc3545; }
+        .btn-outline-secondary { color: #6c757d; border-color: #6c757d; background: white; }
+        .btn-outline-secondary:hover { color: #fff; background-color: #6c757d; }
+        
+        .form-control { display: block; width: 100%; padding: 0.375rem 0.75rem; font-size: 1rem; border: 1px solid #ced4da; border-radius: 0.25rem; }
+        textarea.form-control { resize: vertical; min-height: 110px; }
+        
+        /* 日付入力 */
+        input[type="date"] { position: relative; padding-right: 30px; font-size: 18px; padding-top: 5px; padding-bottom: 5px; }
+        input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; right: 5px; width: 24px; height: 24px; padding: 0; margin: 0; cursor: pointer; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230d6efd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>'); background-repeat: no-repeat; background-position: center; background-size: contain; color: transparent; opacity: 1; }
+
+        .alert { position: relative; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 0.25rem; }
+        .alert-warning { color: #664d03; background-color: #fff3cd; border-color: #ffecb5; }
+        .alert-primary { color: #084298; background-color: #cfe2ff; border-color: #b6d4fe; }
+        
+        /* Grid */
+        .row { display: flex; flex-wrap: wrap; margin-right: -0.75rem; margin-left: -0.75rem; }
+        .col-auto { flex: 0 0 auto; width: auto; padding: 0 0.75rem; }
+        .col-md-3 { flex: 0 0 auto; width: 25%; padding: 0 0.75rem; }
+        .col-md-4 { flex: 0 0 auto; width: 33.3333%; padding: 0 0.75rem; }
+        .col-md-5 { flex: 0 0 auto; width: 41.6667%; padding: 0 0.75rem; }
+        .col-md-6 { flex: 0 0 auto; width: 50%; padding: 0 0.75rem; }
+        .d-flex { display: flex; }
+        .gap-2 { gap: 0.5rem; } .gap-3 { gap: 1rem; }
+        .justify-content-between { justify-content: space-between; }
+        .align-items-center { align-items: center; }
+        .justify-content-center { justify-content: center; }
+        .justify-content-end { justify-content: flex-end; }
+        .flex-fill { flex: 1 1 auto; }
+        .text-center { text-align: center; } .text-end { text-align: right; }
+        .fw-bold { font-weight: bold; } .small { font-size: 0.875rem; }
+        .text-muted { color: #6c757d; } .text-primary { color: #0d6efd; } .text-danger { color: #dc3545; }
+        .mt-1 { margin-top: 0.25rem; } .mt-2 { margin-top: 0.5rem; } .mb-1 { margin-bottom: 0.25rem; } .mb-2 { margin-bottom: 0.5rem; } .mb-3 { margin-bottom: 1rem; } .mb-4 { margin-bottom: 1.5rem; }
+        .border-top { border-top: 1px solid #dee2e6; } .border-bottom { border-bottom: 1px solid #dee2e6; }
+        .card { background:#fff; border:1px solid #dee2e6; border-radius:4px; padding:15px; }
+
+        /* Tabs */
+        .sticky-tabs { position: -webkit-sticky; position: sticky; top: 0; z-index: 900; background-color: #f4f6f9; padding-top: 10px; margin-bottom: 20px; border-bottom: 1px solid #dee2e6; }
+        .nav-tabs { display: flex; list-style: none; padding-left: 0; margin-bottom: 0; border-bottom: 1px solid #dee2e6; }
+        .nav-item { margin-bottom: -1px; }
+        .nav-link { display: block; padding: 0.5rem 1rem; text-decoration: none; background-color: #e9ecef; border: 1px solid #dee2e6; margin-right: 4px; color: #555; font-weight: 500; border-top-left-radius: 0.25rem; border-top-right-radius: 0.25rem; cursor: pointer; }
+        .nav-link:hover { background-color: #dde0e3; }
+        .nav-link.active { color: #0d6efd; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; font-weight: bold; }
+        .tab-content > .tab-pane { display: none; }
+        .tab-content > .tab-pane.show { display: block; }
+
+        /* Table */
+        .table { width: 100%; margin-bottom: 1rem; vertical-align: top; border-color: #dee2e6; border-collapse: collapse; }
+        .table-bordered th, .table-bordered td { border: 1px solid #dee2e6; }
+        .table-custom { font-size: 15px; }
+        .table-custom th { background-color: #2c3e50 !important; color: #ffffff !important; text-align: center; font-weight: 600; padding: 8px; white-space: nowrap; }
+        .table-custom td { padding: 6px 8px; line-height: 1.3; vertical-align: middle; }
+        .cell-nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cell-wrap { word-wrap: break-word; overflow-wrap: break-word; }
+        tr.row-none td { background-color: #ffffff !important; color: #333; }
+        tr.row-alert td { background-color: #ffe6e6 !important; color: #b00; font-weight: bold; }
+        tr.row-gray td { background-color: #f2f2f2 !important; color: #666; }
+
+        /* 列幅設定 */
+        .col-w-name { width: 20%; }
+        .col-w-class { width: 12%; }
+        .col-w-period { width: 16%; }
+        .col-w-calc { width: 25%; }
+        .col-w-reason { width: 22%; }
+        .col-w-ref { width: 5%; }
+
+        /* Others */
+        .citation-list { padding-left: 0; list-style: none; margin-bottom: 0; }
+        .citation-item { padding-left: 1.5em; text-indent: -1.5em; margin-bottom: 2px; font-size: 0.85rem; }
+        #backToTop { display: none; position: fixed; bottom: 30px; right: 30px; z-index: 2000; font-size: 18px; border: none; background-color: #0d6efd; color: white; cursor: pointer; padding: 10px 15px; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); opacity: 0.8; transition: opacity 0.3s; }
+        #backToTop:hover { opacity: 1; background-color: #0b5ed7; }
+        
+        /* Edit Cell */
+        .edit-container { display: flex; align-items: center; width: 100%; position: relative; }
+        .editable-cell { flex-grow: 1; min-width: 0; font-weight: bold; border: 1px solid #ccc; padding: 2px 5px; border-radius: 3px; font-size: 1rem; background-color: #fff; min-height: 1.5em; line-height: 1.3; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; }
+        .editable-cell:focus { border-color: #0d6efd; outline: 0; box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25); }
+        .btn-quick-set { white-space: nowrap; font-size: 0.75rem; padding: 2px 6px; margin-left: 3px; cursor: pointer; }
+        .edit-mark { margin-left: 5px; font-size: 1.1rem; color: #dc3545; display: none; white-space: nowrap;}
+
+        /* Protocol CSS */
+        #ac-wrapper .date-section { background-color: #e3f2fd; border: 1px solid #bbdefb; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        #ac-wrapper .selection-area { display: flex; gap: 30px; margin-bottom: 30px; }
+        #ac-wrapper .step-box { flex: 1; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; height: 100%; }
+        #ac-wrapper h2 { font-size: 1.1rem; color: #2980b9; margin-top: 0; border-left: 5px solid #2980b9; padding-left: 10px; }
+        #ac-wrapper button.custom-btn { padding: 12px; font-size: 0.95rem; text-align: left; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; width: 100%; margin-bottom: 8px; color: #333; }
+        #ac-wrapper button.custom-btn:hover { background-color: #eaf2f8; border-color: #3498db; }
+        #ac-wrapper button.custom-btn.selected { background-color: #3498db; color: white; border-color: #2980b9; font-weight: bold; }
+        #ac-result-area { display: none; border-top: 2px dashed #bdc3c7; padding-top: 30px; margin-bottom: 50px; }
+        #ac-wrapper .comparison-container { display: flex; gap: 20px; }
+        #ac-wrapper .risk-col { flex: 1; padding: 20px; border-radius: 6px; border: 2px solid transparent; display: flex; flex-direction: column; }
+        #ac-wrapper .risk-high { background-color: #fff5f5; border-color: #e74c3c; }
+        #ac-wrapper .risk-low { background-color: #f0f9ff; border-color: #3498db; }
+        #ac-wrapper .risk-title { font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; text-align: center; padding: 5px; border-radius: 4px; color: white; }
+        #ac-wrapper .risk-high .risk-title { background-color: #c0392b; }
+        #ac-wrapper .risk-low .risk-title { background-color: #2980b9; }
+        #ac-wrapper .definition-box { font-size: 0.85rem; background: #fff; padding: 10px; border: 1px solid #ddd; margin-bottom: 15px; color: #555; }
+        #ac-wrapper .action-box { font-size: 1.1rem; font-weight: bold; padding: 15px; background: #fff; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-grow: 1; }
+        #ac-wrapper .schedule-info { margin-top: 15px; padding-top: 15px; border-top: 1px dotted #ccc; font-size: 1.2rem; color: #c0392b; font-weight: bold; text-align: center; }
+        #ac-wrapper .footer-info { margin-top: 20px; padding: 15px; background-color: #fff8e1; border: 1px solid #ffe082; border-radius: 5px; }
+        #ac-wrapper .footer-title { font-weight: bold; color: #f57c00; margin-bottom: 5px; }
+        #ac-wrapper details { margin-top: 40px; border: 1px solid #ccc; background: #fff; }
+        #ac-wrapper summary { background: #eee; padding: 15px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+        #ac-wrapper .table-container { overflow-x: auto; padding: 10px; }
+        #ac-wrapper table.ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; line-height: 1.5; }
+        #ac-wrapper table.ref-table th, #ac-wrapper table.ref-table td { border: 1px solid #888; padding: 6px 5px; vertical-align: top; }
+        #ac-wrapper .col-drug { width: 10%; } #ac-wrapper .col-risk { width: 26%; }
+        #ac-wrapper .col-surg-sm { width: 10%; } #ac-wrapper .col-surg-lg { width: 22%; }
+        #ac-wrapper .bg-header { background-color: #343a40; color: #fff; text-align: center; }
+        #ac-wrapper .bg-warfarin { background-color: #fff3cd; }
+        #ac-wrapper .bg-doac { background-color: #d1e7dd; }
+        #ac-wrapper .bg-platelet { background-color: #fff9c4; }
+        #ac-wrapper .txt-center { text-align: center; } #ac-wrapper .txt-bold { font-weight: bold; }
+        #ac-wrapper .no-wrap { white-space: nowrap; }
+        #ac-wrapper .risk-list { font-size: 100%; color: #333; margin-top: 5px; text-align: left; line-height: 1.4; }
+        #ac-wrapper .hanging-item { padding-left: 1em; text-indent: -1em; margin-bottom: 4px; }
+        #ac-wrapper .heparin-note { margin-top: 8px; padding-top:5px; border-top:1px dashed #999; color: #c0392b; font-size:0.8rem;}
+        #ac-wrapper .drug-list { font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: block; }
+        #ac-wrapper .drug-item { display: block; }
+        #ac-wrapper .bottom-notes { margin-top: 20px; padding: 15px; border-top: 2px solid #333; font-size: 0.85rem; }
+        
+        #ac-wrapper table.note-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
+        #ac-wrapper table.note-table th, #ac-wrapper table.note-table td { border: 1px solid #888; padding: 6px 6px; vertical-align: middle; }
+        #ac-wrapper table.note-table th { background-color: #e9ecef; text-align: center; }
+        #ac-wrapper table.note-table th:nth-child(1), #ac-wrapper table.note-table td:nth-child(1) { width: 8%; text-align: center; font-weight: bold; }
+        #ac-wrapper table.note-table th:nth-child(2), #ac-wrapper table.note-table td:nth-child(2) { width: 10%; text-align: center; }
+        #ac-wrapper table.note-table tr:nth-child(3) td:nth-child(2) { text-align: left !important; vertical-align: top; }
+
+        /* Timeline & Calendar */
+        .timeline-wrapper { display: flex; gap: 20px; align-items: flex-start; }
+        .timeline-container { flex: 0 0 450px; }
+        .calendar-container { flex: 1; min-width: 0; }
+        
+        .timeline-table { width: 100%; border-collapse: collapse; font-size: 1.2rem; }
+        .timeline-table th, .timeline-table td { border: 1px solid #ccc; padding: 12px 15px; vertical-align: middle; }
+        .timeline-table th { background-color: #2c3e50; color: white; text-align: center; }
+        .timeline-date-col { width: 30%; text-align: center; font-weight: bold; white-space: nowrap; background-color: #f8f9fa; }
+        .timeline-content-col { text-align: left; }
+        .timeline-row-today { background-color: #ffe6e6; border: 2px solid #dc3545; }
+        .timeline-row-today .timeline-date-col { color: #dc3545; font-size: 1.3rem; }
+        .timeline-row-today .timeline-content-col { font-weight: bold; color: #dc3545; }
+
+        /* Calendar Styles */
+        .cal-wrapper { display: flex; gap: 15px; flex-wrap: wrap; }
+        .cal-month { border: 1px solid #ddd; background: #fff; padding: 10px; border-radius: 4px; min-width: 250px; flex: 1; }
+        .cal-header { text-align: center; font-weight: bold; margin-bottom: 8px; font-size: 1.1rem; color: #2c3e50; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+        .cal-day-header { text-align: center; font-size: 0.85rem; font-weight: bold; background: #f0f0f0; padding: 4px 0; }
+        .cal-cell { border: 1px solid #eee; text-align: center; padding: 6px 2px; min-height: 40px; font-size: 0.9rem; position: relative; }
+        .cal-today { background-color: #ffe6e6; font-weight: bold; border-color: #dc3545; }
+        .cal-surgery { background-color: #dc3545; color: white; font-weight: bold; border-radius: 4px; }
+        .cal-mark { background-color: #d1e7dd; color: #0f5132; font-weight: bold; border-radius: 4px; cursor: help; }
+        .cal-mark-desc { font-size: 0.7rem; display: block; margin-top: 2px; line-height: 1; opacity: 0.8; }
+
+        #printResultTable { display: none; }
+        @media print {
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print, .nav-tabs, .btn, .form-control, .alert, .modal, #backToTop, .sticky-tabs, #ie-warning { display: none !important; }
+            .container-main { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
+            .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+            .tab-pane { display: none !important; }
+            .tab-pane.show { display: block !important; }
+            tr.row-alert td { background-color: #ffe6e6 !important; }
+            tr.row-gray td { background-color: #f2f2f2 !important; }
+            #ac-wrapper .risk-high { background-color: #fff5f5 !important; }
+            #ac-wrapper .risk-low { background-color: #f0f9ff !important; }
+            
+            .table-custom { font-size: 12px !important; }
+            .table-custom th, .table-custom td { padding: 3px 4px !important; }
+            .table-custom .small { font-size: inherit !important; }
+
+            #resultTable { display: none !important; }
+            #printResultTable { display: table !important; width: 100%; }
+            .edit-mark[style*="inline"] { display: inline !important; }
+            .d-print-block { display: block !important; }
+            
+            #printCitationList { column-count: 2; column-gap: 20px; font-size: 7pt; margin-top: 0; }
+            
+            details { display: block !important; page-break-before: always; page-break-after: always; zoom: 0.8; }
+            #ac-wrapper .selection-area, #ac-wrapper .date-section { display: none; }
+            #ac-wrapper details summary { display: none; }
+            .table-container { display: block; overflow: visible; }
+            .ref-table { width: 100%; }
+            .timeline-wrapper { display: block; }
+            .timeline-container, .calendar-container { width: 100%; margin-bottom: 20px; }
+            .timeline-table { font-size: 11pt !important; }
+            @page { margin: 5mm; size: auto; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="ie-warning">
+    <div class="ie-modal-content">
+        <h2 style="color:#dc3545; margin-top:0; font-size:24px;">⚠️ Internet Explorer は非対応です</h2>
+        <p style="font-size:16px; line-height:1.6;">本ツールは IE では正しく動作しません。<br>以下のボタンを押して <strong>Microsoft Edge</strong> で正規のページを開いてください。</p>
+        <button class="ie-btn" onclick="jumpToEdge()">👉 ここを押して Edge で開く</button>
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
+        <p style="text-align:left; font-weight:bold; margin-bottom:5px;">Google Chrome をご利用の方：</p>
+        <div style="text-align:left; font-size:0.9em;">以下のURLをコピーして、Chromeのアドレスバーに貼り付けてください。</div>
+        <div class="ie-url-box" id="target-url-display"></div>
+        <button onclick="copyUrl()" style="padding:5px 10px; cursor:pointer;">URLをコピー</button>
+        <span id="copy-msg" style="color:green; display:none; margin-left:10px;">コピーしました！</span>
+    </div>
+</div>
+
+<script>
+(function(){
+    var TARGET_URL = "http://10.5.71.73/new-portal/content/shishin_manual/manual/shinryogijutsubu/htm/yakuzaika/休薬確認ツール.html";
+    var ua = window.navigator.userAgent;
+    var isIE = ua.indexOf('MSIE ') > -1 || ua.indexOf('Trident/') > -1;
+    if(isIE) {
+        var modal = document.getElementById('ie-warning');
+        var urlDisplay = document.getElementById('target-url-display');
+        modal.style.display = 'flex';
+        urlDisplay.innerText = TARGET_URL;
+        var mainContainer = document.querySelector('.container-main');
+        if(mainContainer) mainContainer.style.display = 'none';
+    }
+    window.jumpToEdge = function() { window.location.href = "microsoft-edge:" + TARGET_URL; };
+    window.copyUrl = function() {
+        var range = document.createRange();
+        range.selectNode(document.getElementById("target-url-display"));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();
+        var msg = document.getElementById("copy-msg");
+        msg.style.display = "inline";
+        setTimeout(function(){ msg.style.display = "none"; }, 2000);
+    };
+})();
+</script>
+
+<button id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'});" style="display: block;">▲</button>
+
+<div class="container-main">
+    <div class="d-flex justify-content-between align-items-center no-print mb-3">
+        <h3 class="fw-bold m-0" style="font-size:18px;">🏥 術前休薬確認ツール Ver40</h3>
+        <button class="btn btn-secondary btn-sm" onclick="window.location.reload()">リセット</button>
+    </div>
+
+    <div class="alert alert-warning border border-warning small no-print">
+        <strong>【ご注意】</strong> 本表は汎用薬を抜粋したものです。これ以外にも留意すべき薬剤があります。あくまでも一目安としてご利用ください。
+    </div>
+
+    <div class="sticky-tabs no-print">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="nav-link active" data-target="check-tab" onclick="switchTab('check-tab')">① 判定・リスト作成</a></li>
+            <li class="nav-item"><a class="nav-link" data-target="schedule-tab" onclick="switchTab('schedule-tab')">② 休薬日確認</a></li>
+            <li class="nav-item"><a class="nav-link" data-target="master-tab" id="master-tab-btn" onclick="switchTab('master-tab')">③ 薬剤一覧検索</a></li>
+            <li class="nav-item"><a class="nav-link" data-target="anticoagulant-tab" onclick="switchTab('anticoagulant-tab')">④ 抗凝固・抗血小板薬プロトコル</a></li>
+            <li class="nav-item"><a class="nav-link text-primary" data-target="admin-tab" onclick="switchTab('admin-tab')">⚙️ 管理・抽出</a></li>
+        </ul>
+    </div>
+
+    <div class="tab-content">
+        <div id="check-tab" class="tab-pane show active" style="display: block;">
+            <div class="row g-2 mb-3 no-print">
+                <div class="col-md-5">
+                    <textarea id="rawInput" class="form-control" placeholder="電子カルテ等の薬剤リストをここに貼り付けてください"></textarea>
+                </div>
+                <div class="col-md-4">
+                    <label class="small fw-bold">手術予定日</label>
+                    <input type="date" id="surgeryDate" class="form-control" onchange="processData()">
+                    <div class="text-primary small mt-1">※手術日未入力でも判定可能。入力で期間を表示。</div>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-primary fw-bold flex-fill h-fixed-match" style="font-size:1.2rem;" onclick="processData()">判定実行</button>
+                    <button class="btn btn-success fw-bold flex-fill h-fixed-match" style="font-size:1.2rem;" onclick="window.print()">印 刷</button>
+                </div>
+            </div>
+            <div class="print-header">
+                <div style="font-size: 16pt; font-weight: bold;">術前休薬チェックシート <span style="font-size:0.6em; font-weight:normal;">(データ更新日：<span id="headerDateDisplay">Ver40.1 (2026.06.03)</span>)</span></div>
+                <div id="printDateDisplay_Check" style="font-size: 12pt; font-weight: bold;">手術予定日：未設定</div>
+            </div>
+            <div class="d-none d-print-block small border-bottom mb-2 pb-1">※本表は汎用薬を抜粋したものです。これ以外にも留意すべき薬剤があります。</div>
+            
+            <table class="table table-bordered table-custom no-print-force" id="resultTable">
+                <thead><tr>
+                    <th class="col-w-name">薬剤名(判定)</th>
+                    <th class="col-w-class">分類</th>
+                    <th class="col-w-period">休薬期間</th>
+                    <th class="col-w-calc col-calc">推奨休薬期間・開始日</th>
+                    <th class="col-w-reason">休薬理由</th>
+                    <th class="col-w-ref">引用</th>
+                </tr></thead>
+                <tbody><tr><td colspan="6" class="text-center text-muted py-4">データを入力して「判定実行」を押してください</td></tr></tbody>
+            </table>
+            
+            <table class="table table-bordered table-custom" id="printResultTable">
+                <thead><tr>
+                    <th class="col-w-name">薬剤名(判定)</th>
+                    <th class="col-w-class">分類</th>
+                    <th class="col-w-period">休薬期間</th>
+                    <th class="col-w-calc col-calc">推奨休薬期間・開始日</th>
+                    <th class="col-w-reason">休薬理由</th>
+                    <th class="col-w-ref">引用</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+            
+            <div class="mt-2 border-top pt-2 no-print"><small class="text-muted fw-bold">引用元:</small><div id="citationList" class="citation-list small text-muted"><ul class="citation-list"><li class="citation-item">[1] 糖尿病治療におけるSGLT2阻害薬の適正使用に関する Recommendation</li><li class="citation-item">[2] 手術などを行う際の抗凝固薬・抗血小板薬取り扱いの参考目安(院内ポータル)</li><li class="citation-item">[3] 添付文書</li><li class="citation-item">[4] 骨吸収抑制薬関連顎骨壊死の病態と管理 : 顎骨壊死検討委員会ポジションペーパー 2016</li><li class="citation-item">[5] NCCNガイドライン：結腸癌ガイドライン・直腸癌ガイドライン</li><li class="citation-item">[6] 医薬品適正使用ガイド</li><li class="citation-item">[7] 医薬品インタビューフォーム</li><li class="citation-item">[8] 製薬企業ホームページ</li><li class="citation-item">[9] 当院代謝内分泌内科より</li><li class="citation-item">[10] 当院麻酔科より</li><li class="citation-item">[11] 心不全治療におけるSGLT2阻害薬の適正使用に関するRecommendation</li><li class="citation-item">[12] 半減期から判断</li></ul></div></div>
+            <div class="mt-2 border-top pt-2 d-none d-print-block"><small class="fw-bold">【引用・根拠】</small><div id="printCitationList" class="citation-list"><ul class="citation-list"><li class="citation-item">[1] 糖尿病治療におけるSGLT2阻害薬の適正使用に関する Recommendation</li><li class="citation-item">[2] 手術などを行う際の抗凝固薬・抗血小板薬取り扱いの参考目安(院内ポータル)</li><li class="citation-item">[3] 添付文書</li><li class="citation-item">[4] 骨吸収抑制薬関連顎骨壊死の病態と管理 : 顎骨壊死検討委員会ポジションペーパー 2016</li><li class="citation-item">[5] NCCNガイドライン：結腸癌ガイドライン・直腸癌ガイドライン</li><li class="citation-item">[6] 医薬品適正使用ガイド</li><li class="citation-item">[7] 医薬品インタビューフォーム</li><li class="citation-item">[8] 製薬企業ホームページ</li><li class="citation-item">[9] 当院代謝内分泌内科より</li><li class="citation-item">[10] 当院麻酔科より</li><li class="citation-item">[11] 心不全治療におけるSGLT2阻害薬の適正使用に関するRecommendation</li><li class="citation-item">[12] 半減期から判断</li></ul></div></div>
+        </div>
+
+        <div id="schedule-tab" class="tab-pane" style="display: none;">
+            <div class="print-header">
+                <div style="font-size: 16pt; font-weight: bold;">休薬日確認カレンダー</div>
+                <div id="printScheduleDateDisplay" style="font-size: 12pt; font-weight: bold;">手術予定日：未設定</div>
+            </div>
+            <div class="row align-items-center mb-3 no-print justify-content-center">
+                <div class="col-auto"><label class="fw-bold">手術予定日：</label></div>
+                <div class="col-auto"><input type="date" id="scheduleDateInput" class="form-control" onchange="calcScheduleTab()"></div>
+                <div class="col-auto"><button class="btn btn-success" onclick="window.print()">このページを印刷</button></div>
+            </div>
+            <div id="scheduleResultArea" class="table-custom"></div>
+        </div>
+
+        <div id="master-tab" class="tab-pane" style="display: none;">
+            <div class="mb-2"><input type="text" id="masterSearch" class="form-control" placeholder="薬剤名を入力（ひらがな・カナ検索可、スペース区切りで複数可）" onkeyup="filterMasterTable()"></div>
+            <div style="height: 650px; overflow-y: auto;">
+                <table class="table table-bordered table-custom">
+                    <thead style="position: sticky; top: 0; z-index: 10;"><tr><th style="width: 10%;">分類</th><th style="width: 15%;">商品名</th><th style="width: 30%;">一般名</th><th style="width: 13%;">休薬期間</th><th style="width: 27%;">理由</th></tr></thead>
+                    <tbody id="masterTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="anticoagulant-tab" class="tab-pane" style="display: none;">
+            <div id="ac-wrapper">
+                <div class="date-section no-print" style="margin-top:20px;">
+                    <label class="date-label">📅 手術予定日：</label>
+                    <input type="date" id="ac-surgery-date" onchange="updateACDisplay()">
+                    <span style="font-size:0.9rem; margin-left:10px; color:#666;">（入力すると休薬開始日を自動計算します）</span>
+                </div>
+                <div class="selection-area no-print">
+                    <div class="step-box">
+                        <h2>1. 薬剤を選択</h2>
+                        <div class="btn-group-custom" id="drug-buttons">
+                            <button class="custom-btn" onclick="setACDrug('warfarin', this)">ワーファリン</button>
+                            <button class="custom-btn" onclick="setACDrug('doac_pe', this)">DOAC：プラザキサ / エリキュース</button>
+                            <button class="custom-btn" onclick="setACDrug('doac_il', this)">DOAC：イグザレルト / リクシアナ</button>
+                            <button class="custom-btn" onclick="setACDrug('platelet_main', this)">抗血小板薬：バイアスピリン/パナルジン/クロピドグレル(プラビックス)/エフィエント</button>
+                            <button class="custom-btn" onclick="setACDrug('platelet_cilo', this)">抗血小板薬：シロスタゾール</button>
+                        </div>
+                    </div>
+                    <div class="step-box">
+                        <h2>2. 手術・処置を選択</h2>
+                        <div class="btn-group-custom" id="surgery-buttons">
+                            <button class="custom-btn" onclick="setACSurgery('dental', this)">抜歯・白内障（局所麻酔）</button>
+                            <button class="custom-btn" onclick="setACSurgery('minor', this)">体表の小手術（圧迫等容易）</button>
+                            <button class="custom-btn" onclick="setACSurgery('major', this)">圧迫が困難な場合、大手術</button>
+                            <button class="custom-btn" onclick="setACSurgery('spinal', this)">脊髄・硬膜外麻酔 / カテーテル抜去</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="ac-result-area" style="display:none;">
+                    <h3 style="text-align:center; margin-bottom:20px;">推奨される対応（病態リスク別）</h3>
+                    <div class="comparison-container">
+                        <div class="risk-col risk-high">
+                            <div class="risk-title">高リスク病態</div>
+                            <div class="definition-box" id="high-risk-def"></div>
+                            <div class="action-box">
+                                <div id="high-risk-action"></div>
+                                <div id="high-schedule" class="schedule-info" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="risk-col risk-low">
+                            <div class="risk-title">低リスク病態</div>
+                            <div class="definition-box" id="low-risk-def"></div>
+                            <div class="action-box">
+                                <div id="low-risk-action"></div>
+                                <div id="low-schedule" class="schedule-info" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-info" id="footer-note" style="display:none;">
+                        <div class="footer-title">★ 再開・ヘパリン置換に関する注意</div>
+                        <div id="footer-text"></div>
+                    </div>
+                </div>
+                <div class="text-end no-print mb-3 mt-3"><button class="btn btn-success" onclick="window.print()">このページを印刷</button></div>
+                
+                <details open="">
+                    <summary>（参考）休薬・置換プロトコル全図表</summary>
+                    <div class="table-container">
+                        <table class="ref-table">
+                            <thead><tr class="bg-header"><th class="col-drug">薬剤</th><th class="col-risk">リスク分類・定義</th><th class="col-surg-sm">抜歯・白内障</th><th class="col-surg-sm">体表の小手術<br>(圧迫が容易)</th><th class="col-surg-lg">圧迫困難な場合<br>大手術</th><th class="col-surg-lg">脊髄・硬膜外麻酔<br>カテーテル抜去</th></tr></thead>
+                            <tbody>
+                                <tr class="bg-warfarin"><td rowspan="2" class="txt-center txt-bold">ワルファリンカリウム<br><span style="font-size:0.75rem; font-weight:normal; color:#555;">(ワーファリン)</span></td><td><span class="txt-bold">高リスク病態</span><div class="risk-list"><div class="hanging-item">・心原性脳塞栓症の既往</div><div class="hanging-item">・弁膜症を合併する心房細動</div><div class="hanging-item">・弁膜症ではないが脳卒中の高リスク心房細動</div><div class="hanging-item">・機械弁置換術後の血栓塞栓症の既往</div><div class="hanging-item">・僧帽弁の機械弁置換術後</div><div class="hanging-item">・抗リン脂質抗体症候群</div><div class="hanging-item">・深部静脈血栓症・肺塞栓症</div></div></td><td rowspan="2" class="txt-center"><span class="txt-bold">継続下での施行推奨</span><br>(治療域内確認)<br><br>※カテーテル留置はやむを得ない場合、留置中はINR&lt;3.0</td><td rowspan="2" class="txt-center"><span class="txt-bold">休薬なし</span><br>(治療域内確認)</td><td><span class="txt-bold no-wrap">【休薬】3～5日</span><div class="heparin-note">中止翌日よりヘパリン置換</div></td><td><span class="txt-bold no-wrap">【休薬】5日</span><div class="heparin-note">中止翌日よりヘパリン置換</div><br>穿刺前: PT-INR&lt;1.2<br>抜去時: INR&lt;1.5</td></tr>
+                                <tr class="bg-warfarin"><td><span class="txt-bold">低リスク病態</span><div class="risk-list"><div class="hanging-item">高リスク病態以外</div></div></td><td><span class="txt-bold no-wrap">【休薬】3～5日</span></td><td>穿刺前: PT-INR&lt;1.2を確認<br>(低リスク群では休薬なし)</td></tr>
+                                <tr class="bg-doac"><td rowspan="2" class="txt-center txt-bold"><span class="no-wrap">DOAC</span><span class="drug-list no-wrap"><span class="drug-item">ダビガトラン<br><span style="font-size:0.7em;color:#666;font-weight:normal">(プラザキサ)</span></span><span class="drug-item">リバーロキサバン<br><span style="font-size:0.7em;color:#666;font-weight:normal">(イグザレルト)</span></span><span class="drug-item">アピキサバン<br><span style="font-size:0.7em;color:#666;font-weight:normal">(エリキュース)</span></span><span class="drug-item">エドキサバン<br><span style="font-size:0.7em;color:#666;font-weight:normal">(リクシアナ)</span></span></span></td><td><span class="txt-bold">高リスク病態</span><div class="risk-list"><div class="hanging-item">・心原性脳塞栓症の既往</div><div class="hanging-item">・弁膜症を合併する心房細動</div><div class="hanging-item">・弁膜症ではないが脳卒中の高リスク心房細動</div><div class="hanging-item">・機械弁置換術後の血栓塞栓症の既往</div><div class="hanging-item">・僧帽弁の機械弁置換術後</div><div class="hanging-item">・抗リン脂質抗体症候群</div><div class="hanging-item">・深部静脈血栓症・肺塞栓症</div></div></td><td rowspan="2" class="txt-center"><span class="txt-bold">継続下での施行推奨</span></td><td rowspan="2"><span class="txt-bold no-wrap">【休薬】1日</span><br><span style="font-size:0.75rem">※プラザキサ: 継続下で施行するが、trough aPTT&gt;80秒の場合は緊急性のない手術は避ける</span></td><td><span class="txt-bold no-wrap">【休薬】</span><br>●プラザキサ・エリキュース: <span class="txt-bold">2日</span><br>●イグザレルト・リクシアナ: <span class="txt-bold">1日</span><div class="heparin-note">プラザキサ・エリキュース: 最終投与12時間後よりヘパリン置換<br>イグザレルト・リクシアナ: 最終投与24時間後よりヘパリン置換</div></td><td><span class="txt-bold no-wrap">【休薬】</span><br>●プラザキサ: 4日(CCr≧60)～5日(30&lt;CCr&lt;60)<br>●エリキュース: 3日<br>●イグザレルト・リクシアナ: 2日<div class="heparin-note">(置換開始時期は左記と同様)<br>抜去: APTT正常対照1.5倍未満</div></td></tr>
+                                <tr class="bg-doac"><td><span class="txt-bold">低リスク病態</span><div class="risk-list"><div class="hanging-item">高リスク病態以外</div></div></td><td class="txt-center"><span class="txt-bold">同上</span></td><td>低リスク群では出血時に圧迫による止血対応が可能であることから、仮に休薬する場合には休薬期間を半減期の2倍程度に留めることが合理的である</td></tr>
+                                <tr class="bg-platelet"><td rowspan="2" class="txt-center txt-bold"><span class="no-wrap">抗血小板薬</span><span class="drug-list no-wrap"><span class="drug-item">アスピリン<br><span style="font-size:0.7em;color:#666;font-weight:normal">(バイアスピリン)</span></span><span class="drug-item">チクロピジン<br><span style="font-size:0.7em;color:#666;font-weight:normal">(パナルジン)</span></span><span class="drug-item">クロピドグレル<br><span style="font-size:0.7em;color:#666;font-weight:normal">(プラビックス)</span></span><span class="drug-item">プラスグレル<br><span style="font-size:0.7em;color:#666;font-weight:normal">(エフィエント)</span></span><span class="drug-item">シロスタゾール<br><span style="font-size:0.7em;color:#666;font-weight:normal">(プレタール)</span></span></span></td><td><span class="txt-bold">高リスク病態</span><div class="risk-list"><div class="hanging-item">・冠動脈ステント留置後2ヶ月以内</div><div class="hanging-item">・冠動脈薬剤溶出性ステント留置後12ヶ月以内</div><div class="hanging-item">・脳血行再建術後2ヶ月以内</div><div class="hanging-item">・主幹動脈に50%以上の狭窄を伴う脳梗塞又は一過性脳虚血発作</div><div class="hanging-item">・最近発症した虚血性脳卒中又は一過性脳虚血発作</div><div class="hanging-item">・閉塞性動脈硬化症でFontaine3度(安静時疼痛)以上</div><div class="hanging-item">・頸動脈エコー/頭頸部MRIで休薬危険所見</div></div></td><td rowspan="2" class="txt-center"><span class="txt-bold">継続下での施行を原則とする</span></td><td rowspan="2" class="txt-center"><span class="txt-bold">継続下での施行を原則とする</span></td><td><span class="txt-bold no-wrap">【休薬】</span><br>●主要薬: <span class="txt-bold">7日</span><br>●シロスタゾール: <span class="txt-bold">2日</span><div class="heparin-note">中止翌日よりヘパリン置換</div></td><td><span class="txt-bold no-wrap">【休薬】</span><br>（同左）<div class="heparin-note">(必要に応じて、)<br>中止翌日よりヘパリン置換<br>抜去: APTT正常対照1.5倍未満</div></td></tr>
+                                <tr class="bg-platelet"><td><span class="txt-bold">低リスク病態</span><div class="risk-list"><div class="hanging-item">高リスク病態以外</div></div></td><td><span class="txt-bold no-wrap">【休薬】同上</span><br><div class="heparin-note">場合によって、中止翌日よりヘパリン置換</div></td><td class="txt-center">低リスク群では休薬なし</td></tr>
+                            </tbody>
+                        </table>
+                       
+                        <div class="bottom-notes" style="margin-top:20px;">
+                            <div class="note-title" style="margin-bottom:10px;">ヘパリン置換を行った場合のヘパリン中止時期</div>
+                            <table class="note-table">
+                                <thead>
+                                    <tr>
+                                        <th>対象薬剤</th>
+                                        <th>ヘパリンの種類</th>
+                                        <th>中止時期の目安</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>ワーファリン</td>
+                                        <td>全般</td>
+                                        <td>再開1〜2日後（効果確認後）。<br><span style="font-size:0.85em; color:#666;">※再開5日目以降、至適INR回復を確認</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td rowspan="2">DOAC</td>
+                                        <td><strong>持続静注</strong><br><span style="font-size:0.85em">（未分画ヘパリン）</span></td>
+                                        <td>DOAC投与開始時に中止</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>皮下注</strong><br><span style="font-size:0.85em">（クレキサン等）</span></td>
+                                        <td>
+                                            <ul style="margin:0; padding-left:1.2em; line-height:1.4;">
+                                                <li style="margin-bottom:4px;"><strong>プラザキサ</strong>：次回投与予定の2時間前</li>
+                                                <li style="margin-bottom:4px;"><strong>イグザレルト</strong>：次回投与予定の0〜2時間前</li>
+                                                <li><strong>エリキュース/リクシアナ</strong>：次回投与予定時間</li>
+                                            </ul>
+                                            <div style="font-size:0.85em; color:#d00; margin-top:5px;">※上記タイミングでDOACを開始し、ヘパリンは中止</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>抗血小板薬</td>
+                                        <td>全般</td>
+                                        <td>再開3〜4日後に中止</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="text-align:right; margin-top:10px; color:#666;">出典：2013.06 薬事委員会作成 / 2018.10 改訂</div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div id="admin-tab" class="tab-pane" style="display: none;">
+            <div class="alert alert-primary mb-4 no-print">
+                <h4 class="fw-bold m-0" style="color:#084298;">⚙️ データベース管理・新規薬剤抽出</h4>
+                <p class="m-0 mt-2 small">JUST Calcからデータを貼り付けて、新規薬剤の抽出やシステムの更新を行います。<br>※更新を行った場合、新しいHTMLファイルがダウンロードされますので、既存のファイルに上書きして運用してください。</p>
+            </div>
+
+            <div class="card mb-4 no-print">
+                <h5 class="fw-bold mb-3" style="color:#2c3e50;">■ 新規候補薬剤の抽出</h5>
+                <div class="mb-2">
+                    <textarea id="searchResultInput" class="form-control" style="min-height: 120px;" placeholder="ここにJUST Calcの「検索結果（処方リスト）」を【ヘッダー行を含めて】貼り付けてください"></textarea>
+                </div>
+                <div class="text-end mb-3">
+                    <button class="btn btn-warning fw-bold" onclick="extractNewDrugs()">🔍 新規候補を抽出</button>
+                </div>
+                
+                <table class="table table-bordered table-custom" id="extractResultTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">判定</th>
+                            <th style="width: 25%;">薬品名称(検索結果)</th>
+                            <th style="width: 20%;">成分名</th>
+                            <th style="width: 10%;">術前</th>
+                            <th style="width: 10%;">術後</th>
+                            <th style="width: 15%;">コメント</th>
+                            <th style="width: 15%;">作用機序</th>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td colspan="7" class="text-center text-muted py-4">処方リストを貼り付けて「新規候補を抽出」を押してください</td></tr></tbody>
+                </table>
+            </div>
+
+            <div class="card no-print">
+                <h5 class="fw-bold mb-3" style="color:#2c3e50;">■ ツールの更新（新しいHTMLファイルをダウンロード）</h5>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold small mb-1">マスタデータ (一覧シート)</label>
+                        <textarea id="newMasterInput" class="form-control" style="min-height: 150px; font-size:0.8rem; white-space:pre;" wrap="off" placeholder="JUST Calcの「一覧」シートのデータを【ヘッダー行を含めて】貼り付けてください"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold small mb-1">除外リスト (除外シート)</label>
+                        <textarea id="newExclInput" class="form-control" style="min-height: 150px; font-size:0.8rem; white-space:pre;" wrap="off" placeholder="JUST Calcの「除外」シートのデータを貼り付けてください（ヘッダー行があっても可）"></textarea>
+                    </div>
+                </div>
+                <div class="row align-items-center justify-content-end">
+                    <div class="col-auto">
+                        <label class="fw-bold small">新しいバージョン番号:</label>
+                    </div>
+                    <div class="col-auto">
+                        <input type="text" id="newVersionInput" class="form-control" value="40.1" style="width:100px; text-align:center; font-weight:bold;">
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-danger fw-bold" onclick="downloadNewVersion()">💾 更新版ツールを生成してダウンロード</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// --- 自己更新用変数マーカー ---
+const DATA_UPDATED = "Ver40 (2026.06.03)";
+
+const rawMasterData = `
+分類	分類2	商品名	一般名	休薬期間	引用	休薬理由
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	カルケンス	アカラブルチニブ	前後3日間	6	出血リスク
+糖尿病薬	α-グリコシダーゼ阻害薬	グルコバイ	アカルボース	当日		インスリンによる血糖管理が望まれるため
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	インライタ	アキシチニブ	24時間以上	7	創傷治癒遅延
+降圧薬	ARB	アジルバ	アジルサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	ザクラス	アジルサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	ジルムロ	アジルサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+抗血小板薬	抗血小板薬	バイアスピリン	アスピリン	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	バファリン	アスピリン・ダイアルミネート	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	キャブピリン	アスピリン・ボノプラザン	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	タケルダ	アスピリン・ランソプラゾール	院内プロトコル(別紙)参照	2	出血リスク
+糖尿病薬	SU薬	ジメリン	アセトヘキサミド	当日		インスリンによる血糖管理が望まれるため
+利尿薬	ループ系	ダイアート	アゾセミド	院内推奨期間なし	3	ﾛｸﾛﾆｳﾑの作用増強､昇圧ｱﾐﾝの作用減弱のおそれ
+降圧薬	β受容体遮断薬	アルセノール	アテノロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	β受容体遮断薬	テノーミン	アテノロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+アナフィラキシー補助治療剤	アドレナリン製剤	ネフィー	アドレナリン	院内推奨期間無し	3	鼻の手術歴あれば投与を避ける(点鼻製剤)
+糖尿病薬	DPP-4阻害薬	スイニー	アナグリプチン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	ビグアナイド薬/DPP-4阻害薬	メトアナ	アナグリプチン・メトホルミン	前後2日	9	乳酸アシドーシスのリスク
+抗凝固薬	抗凝固薬	エリキュース	アピキサバン	院内プロトコル(別紙)参照	2	出血リスク
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	アヘン末	アヘン	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	アヘン・トコン	アヘン・トコン	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	ドーフル	アヘン・トコン	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	パンオピン	アヘンアルカロイド	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+抗不整脈薬	Kチャネル阻害	アンカロン	アミオダロン	院内推奨期間なし	3	手術患者には慎重投与
+診断用剤 	診断用剤 	アラグリオ	アミノレブリン酸	院内推奨期間なし	3	手術後４８時間は強い光への眼・皮膚の曝露を回避
+診断用剤 	診断用剤 	アラベル	アミノレブリン酸	院内推奨期間なし	3	手術後４８時間は強い光への眼・皮膚の曝露を回避
+降圧薬	β受容体遮断薬	ローガン	アモスラロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	ACE阻害薬	セタプリル	アラセプリル	24時間前	3	術中血圧低下のリスク
+皮膚潰瘍治療剤	プロスタグランジンE1製剤	プロスタンディン軟膏	アルプロスタジル　アルファデクス	院内推奨期間なし	3	出血リスク
+骨粗鬆症治療薬	ビスホスホネート薬	フォサマック	アレンドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+骨粗鬆症治療薬	ビスホスホネート薬	ボナロン	アレンドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+糖尿病薬	DPP-4阻害薬	ネシーナ	アログリプチン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	チアゾリジン薬/DPP-4阻害薬	リオベル	アログリプチン・ピオグリタゾン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	ビグアナイド薬/DPP-4阻害薬	イニシンク	アログリプチン・メトホルミン	前後2日	9	乳酸アシドーシスのリスク
+降圧薬	β受容体遮断薬	アロチノロール	アロチノロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+抗血小板薬	抗血小板薬	エパデール	イコサペント酸エチル	7日前	3	出血リスク
+骨粗鬆症治療薬	ビスホスホネート薬	ボンビバ	イバンドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+脳循環・代謝改善薬	脳循環・代謝改善薬	セロクラール	イフェンプロジル	2日前	3	出血リスク
+脳循環・代謝改善薬	脳循環・代謝改善薬	ケタス	イブジラスト	2日前	3	出血リスク
+抗アレルギー薬	アレルギー性結膜炎治療剤	ケタス点眼	イブジラスト	-	-	外用剤のため全身への影響は少ない
+糖尿病薬	SGLT2阻害薬	スーグラ	イプラグリフロジン	3日前	1	ケトアシドーシスのリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	イムブルビカ	イブルチニブ	3〜7日	7	出血リスク
+降圧薬	ACE阻害薬	タナトリル	イミダプリル	24時間前	3	術中血圧低下のリスク
+糖尿病薬	Glu依存性ｲﾝｽﾘﾝ分泌促進薬	ツイミーグ	イメグリミン	当日		インスリンによる血糖管理が望まれるため
+降圧薬	ARB	アバプロ	イルベサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB	イルベタン	イルベサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	アイミクス	イルベサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	イルアミクス	イルベサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	イルトラ	イルベサルタン・トリクロルメチアジド	24時間前	3	術中血圧低下のリスク
+糖尿病薬	合剤	ソリクア	インスリングラルギン・リキシセナチド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	合剤	ゾルトファイ	インスリンデグルデク・リラグルチド	当日		インスリンによる血糖管理が望まれるため
+利尿薬	チアジド系類似薬	ナトリックス	インダパミド	院内推奨期間なし	3	ﾛｸﾛﾆｳﾑの作用増強､昇圧ｱﾐﾝの作用減弱のおそれ
+排尿障害改善薬	α1受容体遮断	エブランチル	ウラピジル	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+肝・胆・消化機能改善剤	肝・胆・消化機能改善剤	ウルソ	ウルソデオキシコール酸	院内推奨期間無し	3	十二指腸乳頭部の処置歴あれば慎重投与
+糖尿病薬	GLP-1受容体作動薬	バイエッタ	エキセナチド	当日		インスリンによる血糖管理が望まれるため
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	アリッサ	エステトロール・ドロスピレノン	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	エストラーナテープ	エストラジオール	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	ジュリナ	エストラジオール	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	ディビゲル	エストラジオール	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	ル・エストロジェル	エストラジオール	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン/黄体ホルモン	メノエイドコンビパッチ	エストラジオール・ノルエチステロン酢酸エステル	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン/黄体ホルモン	ウェールナラ	エストラジオール・レボノルゲストレル	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	エストラジオール安息香酸エステル	エストラジオール安息香酸エステル	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	プロギノン・デポー	エストラジオール吉草酸エステル	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	ペラニンデポー	エストラジオール吉草酸エステル	主治医判断	3	長期臥床で血栓リスク
+抗悪性腫瘍薬	卵胞ホルモン	エストラサイト	エストラムスチンリン酸エステルナトリウム水和物	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	エストリール	エストリオール	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	ホーリン	エストリオール	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	プレマリン	エストロゲン	手術前４週	3	静脈血栓塞栓症のリスク
+抗リウマチ剤	TNFα／LTαレセプター製剤 	エンブレル	エタネルセプト	院内推奨期間なし	3	手術前後の臨床試験無し
+骨粗鬆症治療薬	ビスホスホネート薬	ダイドロネル	エチドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+抗悪性腫瘍薬	卵胞ホルモン	プロセキソール	エチニルエストラジオール	主治医判断	3	長期臥床で血栓リスク
+抗凝固薬	抗凝固薬	リクシアナ	エドキサバン	院内プロトコル(別紙)参照	2	出血リスク
+降圧薬	ACE阻害薬	レニベース	エナラプリル	24時間前	3	術中血圧低下のリスク
+糖尿病薬	SGLT2阻害薬	ジャディアンス	エンパグリフロジン	糖尿病3日前/心不全当日	1,11	ケトアシドーシスのリスク
+糖尿病薬	SGLT2阻害薬/DPP-4阻害薬	トラディアンス	エンパグリフロジン・リナグリプチン	3日前	1	ケトアシドーシスのリスク
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	オキシコンチン	オキシコドン	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	オキノーム	オキシコドン	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+気管支喘息治療薬	TXA2合成阻害	ドメナン	オザグレル	院内推奨期間なし	3	出血リスク
+糖尿病薬	DPP-4阻害薬	マリゼブ	オマリグリプチン	当日		インスリンによる血糖管理が望まれるため
+高脂血症治療薬	高脂血症治療薬	ロトリガ	オメガ－３脂肪酸エチル	7日前	ｴﾊﾟﾃﾞｰﾙを参考	出血リスク
+降圧薬	ARB	オルメテック	オルメサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB	オルメサルタンメドキソミル	オルメサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	レザルタス	オルメサルタンメドキソミル・アゼルニジピン	24時間前	3	術中血圧低下のリスク
+糖尿病薬	SGLT2阻害薬	カナグル	カナグリフロジン	3日前	1	ケトアシドーシスのリスク
+降圧薬	ACE阻害薬	カプトリル	カプトプリル	24時間前	3	術中血圧低下のリスク
+微小血栓形成阻害剤	抗VWF抗体	カブリビ	カプラシズマブ	7日前	3	出血リスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	カボメティクス	カボザンチニブ	28日前	8	創傷治癒遅延
+認知症治療薬	コリンエステラーゼ阻害	レミニール	ガランタミン	院内推奨期間なし	3	消化管手術直後･膀胱手術直後は慎重投与
+降圧薬	β受容体遮断薬	ミケラン	カルテオロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	β受容体遮断薬	ミケランＬＡ	カルテオロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	β受容体遮断薬	アーチスト	カルベジロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	ARB	ブロプレス	カンデサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB	カンデサルタンシレキセチル	カンデサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	カムシア	カンデサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	ユニシア	カンデサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	エカード	カンデサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	カデチア	カンデサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+下剤	下剤	マグコロール	クエン酸マグネシウム	院内推奨期間なし	3	腹部外科手術後腸閉塞や腸管穿孔のリスク
+糖尿病薬	SU薬	グリミクロン	グリクラジド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	SU薬	デアメリン	グリクロピラミド	当日		インスリンによる血糖管理が望まれるため
+緩下剤	便の軟化･腸管刺激	グリセリン	グリセリン	院内推奨期間なし	3	下部消化管術直後は禁忌
+糖尿病薬	SU薬	オイグルコン	グリベンクラミド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	SU薬	ダオニール	グリベンクラミド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	SU薬	アマリール	グリメピリド	当日		インスリンによる血糖管理が望まれるため
+抗血小板薬	抗血小板薬	プラビックス	クロピドグレル	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	コンプラビン	クロピドグレル・アスピリン	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	ロレアス	クロピドグレル・アスピリン	院内プロトコル(別紙)参照	2	出血リスク
+糖尿病薬	SU薬	クロルプロパミド	クロルプロパミド	当日		インスリンによる血糖管理が望まれるため
+治療的流産	プロスタグランジンE2製剤	プレグランディン腟坐剤	ゲメプロスト	院内推奨期間なし	3	帝王切開･子宮切開歴は慎重投与
+鎮咳薬	ｵﾋﾟｵｲﾄﾞ受容体作動	コデイン	コデイン	院内推奨期間なし	3	(禁忌)18歳未満の扁桃摘除術後･アデノイド切除術後､(慎重投与)消化管手術後･尿路手術後
+抗炎症薬	副腎皮質ホルモン	コートン	コルチゾン酢酸エステル	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+糖尿病薬	DPP-4阻害薬	オングリザ	サキサグリプチン	当日		インスリンによる血糖管理が望まれるため
+降圧薬	ARNI	エンレスト	サクビトリルバルサルタン	24時間前	3	術中血圧低下のリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	ブルキンザ	ザヌブルチニブ	前後3~7日	3	出血リスク
+抗悪性腫瘍薬	血管新生抑制	サレドカプセル	サリドマイド	主治医判断	3	創傷治癒遅延のリスク
+抗血小板薬	抗血小板薬	アンプラーグ	サルポグレラート	1日前	3	出血リスク
+鎮痛薬	NSAIDs	ジクトルテープ	ジクロフェナク	院内推奨期間なし	3	消化管縫合不全のリスク･腎不全のリスク
+鎮痛薬	NSAIDs	ナボール	ジクロフェナク	院内推奨期間なし	3	消化管縫合不全のリスク･腎不全のリスク
+鎮痛薬	NSAIDs	ボルタレン	ジクロフェナク	院内推奨期間なし	3	消化管縫合不全のリスク･腎不全のリスク
+糖尿病薬	DPP-4阻害薬	グラクティブ	シタグリプチン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	DPP-4阻害薬	ジャヌビア	シタグリプチン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	SGLT2阻害薬/DPP-4阻害薬	スージャヌ	シタグリプチン・イプラグリフロジン	3日前	1	ケトアシドーシスのリスク
+子宮頸管熟化剤	プロスタグランジンE2製剤	プロウペス腟用剤	ジノプロストン	院内推奨期間なし	3	子宮筋層の切開を伴う手術歴は投与禁忌
+陣痛誘発・促進剤	PGE2製剤	プロスタグランジン	ジノプロストン	院内推奨期間なし	3	帝王切開･子宮切開歴は投与禁忌
+鎮咳薬	ｵﾋﾟｵｲﾄﾞ受容体作動	ジヒドロコデイン	ジヒドロコデイン	院内推奨期間なし	3	(禁忌)18歳未満の扁桃摘除術後･アデノイド切除術後､(慎重投与)消化管手術後･尿路手術後
+抗血小板薬	抗血小板薬	ペルサンチン	ジピリダモール	2日前	3	出血リスク
+冠血管拡張薬	冠血管拡張薬	コメリアン	ジラゼプ	2日前	3	出血リスク
+抗血小板薬	抗血小板薬	プレタール	シロスタゾール	院内プロトコル(別紙)参照	2	出血リスク
+前立腺肥大症治療薬	α1A受容体遮断	ユリーフ	シロドシン	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+抗悪性腫瘍薬	mTOR阻害	ラパリムス	シロリムス	主治医判断	3	創傷治癒遅延のリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	スーテント	スニチニブ	7～10 日前	7	創傷治癒遅延
+抗菌薬	葉酸合成阻害	ダイフェン	スルファメトキサゾール・トリメトプリム	院内推奨期間なし	3	胃摘出術後貧血リスク
+抗菌薬	葉酸合成阻害	バクタ	スルファメトキサゾール・トリメトプリム	院内推奨期間なし	3	胃摘出術後貧血リスク
+抗菌薬	葉酸合成阻害	バクトラミン	スルファメトキサゾール・トリメトプリム	院内推奨期間なし	3	胃摘出術後貧血リスク
+高リン血症治療薬	リン吸着	フォスブロック	セベラマー	院内推奨期間なし	3	腹部手術後腸閉塞のリスク
+高リン血症治療薬	リン吸着	レナジェル	セベラマー	院内推奨期間なし	3	腹部手術後腸閉塞のリスク
+糖尿病薬	GLP-1受容体作動薬	オゼンピック	セマグルチド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	GLP-1受容体作動薬	リベルサス	セマグルチド	当日		インスリンによる血糖管理が望まれるため
+肥満症治療薬	GLP-1受容体作動薬	ウゴービ	セマグルチド	当日	（根拠なし）	インスリンによる血糖管理が望まれるため
+降圧薬	β受容体遮断薬	セレクトール	セリプロロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+肺高血圧症治療薬	IP受容体作動	ウプトラビ	セレキシパグ	2日前	10,12	出血リスク
+鎮痛薬	NSAIDs	セレコックス	セレコキシブ	院内推奨期間なし	3	冠動脈バイパス再建術では投与禁忌
+緩下剤	蠕動運動促進	アジャスト	センナ	院内推奨期間なし	3	腹部手術後腹痛ﾘｽｸあり
+緩下剤	蠕動運動促進	ヨーデル	センナ	院内推奨期間なし	3	腹部手術後腹痛ﾘｽｸあり
+緩下剤	蠕動運動促進	アローゼン	センナ・センナ実	院内推奨期間なし	3	腹部手術後腹痛ﾘｽｸあり
+緩下剤	蠕動運動促進	ピムロ	センナ・センナ実	院内推奨期間なし	3	腹部手術後腹痛ﾘｽｸあり
+緩下剤	蠕動運動促進	プルゼニド	センノシド	院内推奨期間なし	3	腹部手術後腹痛ﾘｽｸあり
+抗精神病薬	非定形型	ロドピン	ゾテピン	院内推奨期間なし	3	ロボトミー手術患者には慎重投与
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	ネクサバール	ソラフェニブ	主治医判断	3	創傷治癒遅延のリスク
+骨粗鬆症治療薬	ビスホスホネート薬	ゾメタ	ゾレドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+骨粗鬆症治療薬	ビスホスホネート薬	リクラスト	ゾレドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+緩下剤	蠕動運動促進	セチロ	ダイオウ・センナ配合剤	院内推奨期間なし	3	腹部手術後腹痛ﾘｽｸあり
+抗リウマチ剤	免疫抑制剤	プログラフ	タクロリムス	院内推奨期間なし	3	ﾘｳﾏﾁ患者で人工関節手術の臨床試験無し
+減感作療法薬	減感作療法	アシテアダニ	ダニアレルゲンエキス	院内推奨期間なし	3	口腔内術後吸収率変化のリスク
+減感作療法薬	減感作療法	ミティキュアダニ	ダニアレルゲンエキス	院内推奨期間なし	3	口腔内術後吸収率変化のリスク
+糖尿病薬	SGLT2阻害薬	フォシーガ	ダパグリフロジン	糖尿病3日前/心不全当日	1,11	ケトアシドーシスのリスク
+抗凝固薬	抗凝固薬	プラザキサ	ダビガトラン	院内プロトコル(別紙)参照	2	出血リスク
+前立腺肥大症治療薬	α1受容体遮断	ハルナール	タムスロシン	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+抗悪性腫瘍薬	抗エストロゲン 	ノルバデックス	タモキシフェン	院内推奨期間無し	3	長期臥床で血栓リスク
+血液凝固阻止剤	血液凝固系阻害	フラグミン	ダルテパリン	院内推奨期間なし	3	出血リスク
+抗血小板薬	抗血小板薬	ブリリンタ	チカグレロル	5日以上前	3	出血リスク
+抗血小板薬	抗血小板薬	パナルジン	チクロピジン	院内プロトコル(別紙)参照	2	出血リスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	ベレキシブル	チラブルチニブ	主治医判断	3	出血リスク
+糖尿病薬	持続性GLP-1受容体作動薬	マンジャロ	チルゼパチド	当日		インスリンによる血糖管理が望まれるため
+肥満症治療薬	GLP-1受容体作動薬	ゼップバウンド	チルゼパチド	院内推奨期間なし	3	インスリンによる血糖管理が望まれるため
+抗炎症薬	副腎皮質ホルモン	デカドロン	デキサメタゾン	院内推奨期間なし	3	創傷治癒遅延のリスク
+抗炎症薬	副腎皮質ホルモン	レナデックス	デキサメタゾン	院内推奨期間なし	3	創傷治癒遅延のリスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	ダイホルモン・デポー	テストステロンエナント酸エステル・エストラジオール吉草酸エステル	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン	プリモジアン・デポー筋注	テストステロンエナント酸エステル・エストラジオール吉草酸エステル	主治医判断	3	長期臥床で血栓リスク
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	ファボワール	デソゲストレル・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	マーベロン	デソゲストレル・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+短腸症候群治療薬	GLP-2ｱﾅﾛｸﾞ	レベスティブ	テデュグルチド	院内推奨期間なし	3	術後の患者→慎重に投与
+糖尿病薬	DPP-4阻害薬	テネリア	テネリグリプチン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	SGLT2阻害薬/DPP-4阻害薬	カナリア	テネリグリプチン・カナグリフロジン	3日前	1	ケトアシドーシスのリスク
+骨吸収抑制	抗RANKL抗体	ランマーク	デノスマブ	院内推奨期間なし	3	顎骨壊死のリスク
+骨粗鬆症治療薬	抗RANKL抗体	プラリア	デノスマブ	院内推奨期間なし	3	顎骨壊死のリスク
+降圧薬	ACE阻害薬	エースコール	テモカプリル	24時間前	3	術中血圧低下のリスク
+糖尿病薬	GLP-1受容体作動薬	トルリシティ	デュラグルチド	当日		インスリンによる血糖管理が望まれるため
+降圧薬	ACE阻害薬	アデカット	デラプリル	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB	ミカルディス	テルミサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	テラムロ	テルミサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	ミカムロ	テルミサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬/利尿薬	ミカトリオ	テルミサルタン・アムロジピン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	テルチア	テルミサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	ミコンビ	テルミサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+降圧薬	α1受容体遮断	カルデナリン	ドキサゾシン	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+糖尿病薬	SGLT2阻害薬	デベルザ	トホグリフロジン	3日前	1	ケトアシドーシスのリスク
+利尿薬	ループ系	ルプラック	トラセミド	院内推奨期間なし	3	ﾛｸﾛﾆｳﾑの作用増強､昇圧ｱﾐﾝの作用減弱のおそれ
+抗プラスミン剤	抗プラスミン剤	トランサミン	トラネキサム酸	院内推奨期間なし	3	血栓のリスク
+冠血管拡張薬	冠血管拡張薬	ロコルナール	トラピジル	2日前	3	出血リスク
+鼓膜穿孔治療剤	bFGF受容体刺激	リティンパ	トラフェルミン	院内推奨期間なし	3	鼓室形成手術患者には慎重投与
+降圧薬	ACE阻害薬	オドリック	トランドラプリル	24時間前	3	術中血圧低下のリスク
+抗炎症薬	副腎皮質ホルモン	レダコート	トリアムシノロン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+利尿薬	チアジド系	フルイトラン	トリクロルメチアジド	院内推奨期間なし	3	ﾛｸﾛﾆｳﾑの作用増強､昇圧ｱﾐﾝの作用減弱のおそれ
+冠血管拡張薬	冠血管拡張薬	バスタレル	トリメタジジン	2日前	12	出血リスク
+緑内障治療薬	炭酸脱水酵素阻害	トルソプト点眼液	ドルゾラミド	院内推奨期間なし	3	眼内手術で角膜浮腫リスク増加
+緑内障治療薬	炭酸脱水酵素阻害/β-遮断	コソプト配合点眼液	ドルゾラミド・チモロール	院内推奨期間なし	3	眼内手術で角膜浮腫リスク増加
+緑内障治療薬	炭酸脱水酵素阻害/β-遮断	ドルモロール配合点眼液	ドルゾラミド・チモロール	院内推奨期間なし	3	眼内手術で角膜浮腫リスク増加
+緑内障治療薬	炭酸脱水酵素阻害/β-遮断	コソプトミニ配合点眼液	ドルゾラミド・チモロール	院内推奨期間なし	3	眼内手術で角膜浮腫リスク増加
+肺高血圧症治療薬	PGI2誘導体製剤	トレプロスト	トレプロスチニル	院内推奨期間無し	3	出血リスク､急な中止で死亡の報告(注射製剤)
+抗悪性腫瘍薬	抗エストロゲン 	フェアストン	トレミフェン	院内推奨期間無し	3	長期臥床で血栓リスク
+糖尿病薬	DPP-4阻害薬	ザファテック	トレラグリプチン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	DPP-4阻害薬	ザファテック(週1回)	トレラグリプチン	当日		インスリンによる血糖管理が望まれるため
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	ドロエチ	ドロスピレノン・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	ヤーズ	ドロスピレノン・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	ヤーズフレックス	ドロスピレノン・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+糖尿病薬	速効型インスリン分泌促進薬	スターシス	ナテグリニド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	速効型インスリン分泌促進薬	ファスティック	ナテグリニド	当日		インスリンによる血糖管理が望まれるため
+経口腸管洗浄剤 	経口腸管洗浄剤 	ニフレック	ナトリウム・カリウム配合剤	院内推奨期間なし	3	腹部手術後腸閉塞のリスク
+降圧薬	β受容体遮断薬	ナディック	ナドロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+前立腺肥大症治療薬	α1受容体遮断	フリバス	ナフトピジル	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+飲酒量低減薬 	ｵﾋﾟｵｲﾄﾞ受容体拮抗薬/部分作動薬	セリンクロ	ナルメフェン	ｵﾋﾟｵｲﾄﾞ投与1週間前	3	術中オピオイドの効果減少
+降圧薬	Caチャネル阻害	ペルジピン	ニカルジピン	院内推奨期間なし	3	開心術後、投与注意
+禁煙補助薬	禁煙補助薬	ニコチネル	ニコチン	院内推奨期間なし	3	PCI･CABG直後症状悪化リスク禁忌
+脳循環・代謝改善薬	脳循環・代謝改善薬	サアミオン	ニセルゴリン	2日	12	出血リスク
+降圧薬	β受容体遮断薬	ハイパジール	ニプラジロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	オフェブ	ニンテダニブ	主治医判断	3	創傷治癒遅延のリスク
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	シンフェーズ	ノルエチステロン・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	フリウェル	ノルエチステロン・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ﾎﾙﾓﾝ薬(ピル)	卵胞ホルモン/黄体ホルモン	ルナベル	ノルエチステロン・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ﾎﾙﾓﾝ薬	卵胞ホルモン/黄体ホルモン	プラノバール	ノルゲストレル・エチニルエストラジオール	主治医判断	3	長期臥床で血栓リスク
+壊死組織除去剤	タンパク質分解作用	ネキソブリッド外用ゲル	パイナップル茎搾汁精製物	院内推奨期間なし	3	減張切開創に塗布で出血リスク
+骨粗鬆症治療薬	SERM	ビビアント	バゼドキシフェン	長期不動状態の３日前	3	静脈血栓塞栓症のリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	ヴォトリエント	パゾパニブ	主治医判断	3	創傷治癒遅延のリスク
+抗血栓性末梢循環改善剤	血漿フィブリノゲン濃度低下	デフィブラーゼ	バトロキソビン	院内推奨期間なし	3	出血リスク
+骨粗鬆症治療薬	ビスホスホネート薬	パミドロン酸	パミドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+抗精神病薬	SDA	インヴェガ	パリペリドンパルミチン酸エステル	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+抗精神病薬	SDA	パリペリドン	パリペリドンパルミチン酸エステル	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+降圧薬	ARB	ディオバン	バルサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	アムバロ	バルサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	エックスフォージ	バルサルタン・アムロジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/Ca拮抗薬	アテディオ	バルサルタン・シルニジピン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	コディオ	バルサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	バルヒディオ	バルサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	カプレルサ	バンデタニブ	主治医判断	3	創傷治癒遅延のリスク
+糖尿病薬	チアゾリジン薬	アクトス	ピオグリタゾン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	SU薬/チアゾリジン薬	ソニアス	ピオグリタゾン・グリメピリド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	ビグアナイド薬/チアゾリジン薬	メタクト	ピオグリタゾン・メトホルミン	前後2日	9	乳酸アシドーシスのリスク
+高リン血症治療薬	リン吸着	キックリン	ビキサロマー	院内推奨期間なし	3	腹部手術後腸閉塞のリスク
+経口腸管洗浄剤 	経口腸管洗浄剤 	ピコプレップ	ピコスルファート・酸化マグネシウム・無水クエン酸	院内推奨期間なし	3	腹部外科手術後腸閉塞や腸管穿孔のリスク
+降圧薬	β受容体遮断薬	ビソノテープ	ビソプロロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	β受容体遮断薬	メインテート	ビソプロロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+利尿薬	チアジド系	ヒドロクロロチアジド	ヒドロクロロチアジド	院内推奨期間なし	3	ﾛｸﾛﾆｳﾑの作用増強､昇圧ｱﾐﾝの作用減弱のおそれ
+抗炎症薬	副腎皮質ホルモン	コートリル	ヒドロコルチゾン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	ナルラピド	ヒドロモルフォン	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+緑内障・高眼圧症治療剤	プロスタマイド受容体刺激	グラッシュビスタ	ビマトプロスト	院内推奨期間なし	3	内眼手術の既往で黄斑浮腫のリスク
+糖尿病薬	DPP-4阻害薬	エクア	ビルダグリプチン	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	ビグアナイド薬/DPP-4阻害薬	エクメット	ビルダグリプチン・メトホルミン	前後2日	9	乳酸アシドーシスのリスク
+糖尿病薬	ビグアナイド薬/DPP-4阻害薬	メホビル配合錠	ビルダグリプチン・メトホルミン	前後2日	9	乳酸アシドーシスのリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	ジャイパーカ	ピルトブルチニブ	前後3~5日	3	出血リスク
+抗リウマチ剤	免疫抑制剤	リマチル	ブシラミン	院内推奨期間なし	3	感染リスク
+クローン病治療薬	副腎皮質ホルモン	ゼンタコート	ブデソニド	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+潰瘍性大腸炎治療薬	副腎皮質ホルモン	コレチメント	ブデソニド	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+潰瘍性大腸炎治療薬	副腎皮質ホルモン	レクタブル	ブデソニド	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+降圧薬	α1受容体遮断	デタントール	ブナゾシン	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+緑内障治療薬	α1受容体遮断	デタントール０．０１％点眼液	ブナゾシン	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+抗菌薬	アミノグリコシド系	眼・耳科用リンデロンＡ軟膏	フラジオマイシン・ベタメタゾンリン酸エステル	院内推奨期間なし	3	耳手術後創傷治癒遅延のリスク
+抗菌薬	アミノグリコシド系	ネオメドロールＥＥ軟膏	フラジオマイシン・メチルプレドニゾロン	院内推奨期間なし	3	耳手術後創傷治癒遅延のリスク
+抗血小板薬	抗血小板薬	エフィエント	プラスグレル	院内プロトコル(別紙)参照	2	出血リスク
+高血圧・排尿障害治療	α1受容体遮断	ミニプレス	プラゾシン	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	フリュザクラ	フルキンチニブ	主治医判断	3	創傷治癒遅延のリスク
+抗炎症薬	副腎皮質ホルモン	フロリネフ	フルドロコルチゾン酢酸エステル	院内推奨期間なし	3	創傷治癒遅延のリスク
+抗炎症薬	副腎皮質ホルモン	プレドニン	プレドニゾロン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	プレドネマ	プレドニゾロンリン酸エステル	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+女性ﾎﾙﾓﾝ薬	黄体ホルモン	エフメノ	プロゲステロン	主治医判断	3	長期臥床で血栓リスク
+利尿薬	ループ系	ラシックス	フロセミド	院内推奨期間なし	3	ﾛｸﾛﾆｳﾑの作用増強､昇圧ｱﾐﾝの作用減弱のおそれ
+降圧薬	β受容体遮断薬	インデラル	プロプラノロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	β受容体遮断薬	プロプラノロール	プロプラノロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+乳児血管腫治療剤	β受容体遮断薬	ヘマンジオル	プロプラノロール	48時間前	3	全身麻酔時低血圧のリスク
+降圧薬	β受容体遮断薬	ケルロング	ベタキソロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+抗炎症薬	副腎皮質ホルモン	リンデロン	ベタメタゾン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	エンペラシン	ベタメタゾン・クロルフェニラミン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	サクコルチン	ベタメタゾン・クロルフェニラミン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	セレスタミン	ベタメタゾン・クロルフェニラミン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	セレスタミン配合シロップ	ベタメタゾン・クロルフェニラミン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	ヒスタブロック	ベタメタゾン・クロルフェニラミン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	プラデスミン	ベタメタゾン・クロルフェニラミン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	ベタセレミン	ベタメタゾン・クロルフェニラミン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+抗炎症薬	副腎皮質ホルモン	ステロネマ	ベタメタゾンリン酸エステル	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+降圧薬	ACE阻害薬	チバセン	ベナゼプリル	24時間前	3	術中血圧低下のリスク
+抗リウマチ剤	免疫抑制剤	メタルカプターゼ	ペニシラミン	院内推奨期間なし	3	手術直後重篤な血液障害のリスク
+抗悪性腫瘍薬	抗VEGF抗体	アバスチン	ベバシズマブ	4～6週間	5	創傷治癒遅延
+血液凝固阻止剤	血液凝固系阻害	ノボ・ヘパリン	ヘパリン	院内推奨期間なし	3	出血リスク
+血液凝固阻止剤	血液凝固系阻害	ヘパリンＣａ	ヘパリンカルシウム	院内推奨期間なし	3	出血リスク
+血液凝固阻止剤	血液凝固系阻害	ヘパリンＮａ	ヘパリンナトリウム	院内推奨期間なし	3	出血リスク
+血液凝固阻止剤	血液凝固系阻害	ヘパリン類似物質	ヘパリン類似物質	-	-	外用剤のため全身への影響は少ない
+降圧薬	β受容体遮断薬	カルバン	ベバントロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+抗血小板薬	抗血小板薬	ケアロード	ベラプロスト	1日前	3	出血リスク
+抗血小板薬	抗血小板薬	ドルナー	ベラプロスト	1日前	3	出血リスク
+抗血小板薬	抗血小板薬	プロサイリン	ベラプロスト	1日前	3	出血リスク
+抗血小板薬	抗血小板薬	ベラサス	ベラプロスト	1日前	3	出血リスク
+降圧薬	ACE阻害薬	コバシル	ペリンドプリル	24時間前	3	術中血圧低下のリスク
+糖尿病薬	α-グリコシダーゼ阻害薬	ベイスン	ボグリボース	当日		インスリンによる血糖管理が望まれるため
+過敏性腸症候群治療薬	ゲル化	ポリフル	ポリカルボフィル	院内推奨期間なし	3	胃全摘術後薬効発揮されない
+肥大型心筋症治療薬	心筋ミオシン阻害	カムザイオス	マバカムテン	院内推奨期間なし	3	心臓手術には慎重投与
+糖尿病薬	α-グリコシダーゼ阻害薬	セイブル	ミグリトール	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	速効型インスリン分泌促進薬	グルファスト	ミチグリニド	当日		インスリンによる血糖管理が望まれるため
+糖尿病薬	速効型ｲﾝｽﾘﾝ分泌促進薬/α-GI	グルベス	ミチグリニド・ボグリボース	当日		インスリンによる血糖管理が望まれるため
+骨粗鬆症治療薬	ビスホスホネート薬	ボノテオ	ミノドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	メサペイン	メサドン	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+抗炎症薬	副腎皮質ホルモン	メドロール	メチルプレドニゾロン	院内推奨期間なし	3	周術期副腎不全に注意､ｽﾃﾛｲﾄﾞｶﾊﾞｰを検討
+褐色細胞腫治療薬	チロシン水酸化酵素阻害	デムサー	メチロシン	院内推奨期間なし	3	褐色細胞腫の手術､高血圧･不整脈のリスク
+降圧薬	β受容体遮断薬	セロケン	メトプロロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+降圧薬	β受容体遮断薬	ロプレソール	メトプロロール	継続を推奨	3	中止により反跳性高血圧､虚血症状､不整脈のリスク
+糖尿病薬	ビグアナイド薬	グリコラン	メトホルミン	前後2日	9	乳酸アシドーシスのリスク
+糖尿病薬	ビグアナイド薬	メトグルコ	メトホルミン	前後2日	9	乳酸アシドーシスのリスク
+抗悪性腫瘍薬	黄体ホルモン	ヒスロンH	メドロキシプロゲステロン酢酸エステル	術後1週間	3	静脈血栓塞栓症のリスク
+女性ホルモン薬	黄体ホルモン	ヒスロン	メドロキシプロゲステロン酢酸エステル	術後1週間	ﾋｽﾛﾝHに準じて	静脈血栓塞栓症のリスク
+女性ホルモン薬	黄体ホルモン	メドロキシプロゲステロン酢酸エステル2.5/5	メドロキシプロゲステロン酢酸エステル	術後1週間	ﾋｽﾛﾝHに準じて	静脈血栓塞栓症のリスク
+抗悪性腫瘍薬	黄体ホルモン	メドロキシプロゲステロン酢酸エステル200	メドロキシプロゲステロン酢酸エステル	術後1週間	ﾋｽﾛﾝHに準じて	静脈血栓塞栓症のリスク
+女性ホルモン薬	黄体ホルモン	プロベラ	メドロキシプロゲステロン酢酸エステル	術後1週間	ﾋｽﾛﾝに準じて	静脈血栓塞栓症のリスク
+利尿薬	チアジド系類似薬	バイカロン	メフルシド	院内推奨期間なし	3	ﾛｸﾛﾆｳﾑの作用増強､昇圧ｱﾐﾝの作用減弱のおそれ
+鎮痛薬	NSAIDs	モービック	メロキシカム	院内推奨期間なし	3	腎不全のリスク
+抗アレルギー薬	副腎皮質ホルモン	ナゾネックス点鼻液	モメタゾンフランカルボン酸エステル	院内推奨期間なし	3	鼻手術後創傷治癒遅延のリスク
+抗アレルギー薬	副腎皮質ホルモン	モメタゾン点鼻液	モメタゾンフランカルボン酸エステル	院内推奨期間なし	3	鼻手術後創傷治癒遅延のリスク
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	ＭＳコンチン	モルヒネ	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	ＭＳツワイスロン	モルヒネ	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	アンペック坐剤	モルヒネ	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	アンペック	モルヒネ	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	オプソ	モルヒネ	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	パシーフ	モルヒネ	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+鎮痛薬	ｵﾋﾟｵｲﾄﾞ受容体刺激	モルペス	モルヒネ	継続を推奨	3	尿路手術後排尿障害･消化管手術直後消化管運動抑制
+降圧薬	αβ受容体遮断	トランデート	ラベタロール	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+抗悪性腫瘍薬	抗VEGFR2抗体	サイラムザ	ラムシルマブ	4～6週間	6	創傷治癒遅延
+過敏性腸症候群治療薬	5-HT3受容体阻害	イリボー	ラモセトロン	院内推奨期間なし	3	腹部手術後イレウスのリスクあり
+骨粗鬆症治療薬	SERM	エビスタ	ラロキシフェン	長期不動状態の３日前	3	静脈血栓塞栓症のリスク
+高リン血症治療薬	リン吸着	ホスレノール	ランタン	院内推奨期間なし	3	腹部手術後イレウスの報告
+糖尿病薬	GLP-1受容体作動薬	リキスミア	リキシセナチド	当日		インスリンによる血糖管理が望まれるため
+降圧薬	ACE阻害薬	ゼストリル	リシノプリル	24時間前	3	術中血圧低下のリスク
+降圧薬	ACE阻害薬	ロンゲス	リシノプリル	24時間前	3	術中血圧低下のリスク
+抗精神病薬	SDA	リスパダール	リスペリドン	院内推奨期間なし	3	白内障手術時､術中虹彩緊張低下症候群のリスク
+骨粗鬆症治療薬	ビスホスホネート薬	アクトネル	リセドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+骨粗鬆症治療薬	ビスホスホネート薬	ベネット	リセドロン酸	歯科手術２カ月前	4	顎骨壊死のリスク
+糖尿病薬	DPP-4阻害薬	トラゼンタ	リナグリプチン	当日		インスリンによる血糖管理が望まれるため
+抗凝固薬	抗凝固薬	イグザレルト	リバーロキサバン	院内プロトコル(別紙)参照	2	出血リスク
+血管拡張薬	血管拡張薬	オパルモン	リマプロスト	1日前	3	出血リスク
+血管拡張薬	血管拡張薬	プロレナール	リマプロスト	1日前	3	出血リスク
+血管拡張薬	血管拡張薬	リマプロストアルファデクス	リマプロスト　アルファデクス	1日前	3	出血リスク
+糖尿病薬	GLP-1受容体作動薬	ビクトーザ	リラグルチド	当日		インスリンによる血糖管理が望まれるため
+経口腸管洗浄剤 	経口腸管洗浄剤 	ビジクリア	リン酸二水素ナトリウム一水和物・無水リン酸水素二ナトリウム	院内推奨期間なし	3	腹部外科手術後腸閉塞や腸管穿孔のリスク
+糖尿病薬	SGLT2阻害薬	ルセフィ	ルセオグリフロジン	3日前	1	ケトアシドーシスのリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	スチバーガ	レゴラフェニブ	2週間	6	創傷治癒遅延
+糖尿病薬	速効型インスリン分泌促進薬	シュアポスト	レパグリニド	当日		インスリンによる血糖管理が望まれるため
+女性ホルモン薬	黄体ホルモン	ミレーナ	レボノルゲストレル	院内推奨期間なし	3	骨盤内手術後､術部の回復を確認してから装着
+女性ホルモン薬(ピル)	卵胞ホルモン/黄体ホルモン	アンジュ	レボノルゲストレル・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ホルモン薬(ピル)	卵胞ホルモン/黄体ホルモン	ジェミーナ	レボノルゲストレル・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ホルモン薬(ピル)	卵胞ホルモン/黄体ホルモン	トリキュラー	レボノルゲストレル・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+女性ホルモン薬(ピル)	卵胞ホルモン/黄体ホルモン	ラベルフィーユ	レボノルゲストレル・エチニルエストラジオール	手術前４週､術後２週	3	静脈血栓塞栓症のリスク
+抗悪性腫瘍薬	ﾁﾛｼﾝｷﾅｰｾﾞ阻害薬	レンビマ	レンバチニブ	1週間	8	創傷治癒遅延
+降圧薬	ARB	ニューロタン	ロサルタン	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	プレミネント	ロサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	ロサルヒド	ロサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+降圧薬	ARB/利尿薬	ロサルタンカリウム・ヒドロクロロチアジド	ロサルタン・ヒドロクロロチアジド	24時間前	3	術中血圧低下のリスク
+抗パーキンソン病薬	D2受容体遮断薬	レキップ	ロピニロール	院内推奨期間なし	3	腸切除･人工肛門造設術患者には慎重投与
+骨粗鬆症治療薬	抗スクレロスチン抗体	イベニティ	ロモソズマブ	院内推奨期間なし	3	顎骨壊死のリスク
+抗凝固薬	抗凝固薬	ワーファリン	ワルファリン	院内プロトコル(別紙)参照	2	出血リスク
+徐放性カリウム剤	カリウム補充	塩化カリウム	塩化カリウム	院内推奨期間なし	3	消化管吻合術後吸収率低下のおそれ
+経口腸管洗浄剤 	経口腸管洗浄剤 	モビプレップ	塩化ナトリウム・塩化カリウム・無水硫酸ナトリウム・マクロゴール４０００・アスコルビン酸・Ｌ－アスコルビン酸ナトリウム	院内推奨期間なし	3	腹部手術後腸閉塞のリスク
+止瀉薬	収斂･粘膜保護作用	次硝酸ビスマス	次硝酸ビスマス	院内推奨期間なし	3	腸瘻･人工肛門で血中濃度増加のﾘｽｸ
+診断用剤 	診断用剤 	ピロニック	尿素（１３Ｃ）	院内推奨期間なし	3	胃切除後判定に影響する可能性
+診断用剤 	診断用剤 	ユービット	尿素（１３Ｃ）	院内推奨期間なし	3	胃切除後判定に影響する可能性
+減感作療法薬	減感作療法	シダキュア	標準化スギ花粉エキス（２）	院内推奨期間なし	3	口腔内術後吸収率変化のリスク
+経口腸管洗浄剤 	経口腸管洗浄剤 	サルプレップ	無水硫酸ナトリウム・硫酸カリウム・硫酸マグネシウム水和物	院内推奨期間なし	3	腹部手術後腸閉塞のリスク
+造影剤	大腸CT用経口造影剤	エネマスター	硫酸バリウム	院内推奨期間なし	3	消化管切除後穿孔のリスク
+造影剤	注腸用X線造影剤	コロンフォート	硫酸バリウム	院内推奨期間なし	3	消化管切除後穿孔のリスク
+抗血小板薬	抗血小板薬	バッサミン	アスピリン/ダイアルミネート	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	ファモター	アスピリン/ダイアルミネート	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	アスファネート	アスピリン/ダイアルミネート	院内プロトコル(別紙)参照	2	出血リスク
+抗血小板薬	抗血小板薬	ニトギス	アスピリン/ダイアルミネート	院内プロトコル(別紙)参照	2	出血リスク
+
+`; // DATA_MARKER_END
+
+// EXCLUSION_MARKER_START
+const rawExclusionData = `
+除外キーワード
+ＢＣＧ
+アクチバシン注
+アトニン－Ｏ注
+アヘンアルカロイド・アトロピン注射液
+アヘンアルカロイド・スコポラミン注射液
+アミオダロン塩酸塩静注
+アリクストラ皮下注
+アルガトロバンＨＩ注
+アルガトロバン注射液
+アルチバ静注用
+アルチバ静注用
+アルプロスタジル　アルファデクス２０μｇ注射用
+アルプロスタジル　アルファデクス５００μｇ注射用
+アルプロスタジル１０μｇ２ｍＬ
+アルプロスタジル５μｇ１ｍＬ注射液
+アルプロスタジルアルファデクス点滴静注用
+アルプロスタジル注
+アレモ皮下注
+アンカロン注
+イソゾール注
+イデルビオン静注用
+イノソリッド配合経腸用半固形剤
+イノラス配合経腸用液
+インデラル注射液
+ウテメリン注
+ウテメリン注５０ｍｇ
+ウロナーゼ冠動注用
+ウロナーゼ静注用
+ウロマチックＳ泌尿器科用灌流液３％
+エクストラニール腹膜透析液
+エネーボ配合経腸用液
+エポプロステノール静注用
+エンシュア・リキッド
+オキシトシン注射液
+オルガドロン注射液
+オルプロリクス静注用
+オンデキサ静注用
+キシロカイン注
+キシロカイン注射液
+クリアクター静注用
+グルトパ注
+クレキサン皮下注キット
+ケナコルト－Ａ筋注用関節腔内用水懸注
+ケナコルト－Ａ皮内用関節腔内用水懸注
+ザルトラップ点滴静注
+ジノプロスト１ｍｇ１ｍＬ注射液
+ジノプロスト２ｍｇ２ｍＬ注射液
+ジノプロスト注射液
+シンフェーズＴ
+スロンノンＨＩ注
+ゼプリオンＴＲＩ水懸筋注
+ゼプリオン水懸筋注
+ソセゴン注射液
+ソル・コーテフ静注用
+ソル・コーテフ注射用
+ソル・メドロール静注用
+ツインラインＮＦ配合経腸用液
+デカドロン注射液
+デキサート注射液
+デファイテリオ静注
+デポ・メドロール水懸注
+トーリセル点滴静注液
+ドブタミン塩酸塩
+ドブタミン持続静注
+ドブタミン点滴静注
+ドブトレックスキット点滴静注用
+ドブトレックス注射液
+ドプラム注射液
+トラマール注
+トルブタミド
+トレプロスト注射液
+ニコペリック腹膜透析液
+ネクスビアザイム点滴静注用
+ノバスタンＨＩ注
+ノボセブンＨＩ静注用
+パルクス注
+パルナパリンＮａ透析用
+ビスダイン静注用
+ビスダイン静注用
+ヒムペブジ皮下注
+ファイバ静注用
+フェンタニルクエン酸塩０．００５％２ｍＬ注射液
+フェンタニルクエン酸塩０．００５％５ｍＬ注射液
+フェンタニル注射液
+フォリスチム注
+ブピバカイン
+ブプレノルフィン注
+プロスタルモン・Ｆ注射液１０００
+プロスタンディン注射用
+プロスタンディン点滴静注用
+プロタミン硫酸塩静注
+プロタミン硫酸塩注射液
+ベイフォータス筋注
+ペチジン塩酸塩
+ペチロルファン配合注
+ペチロルファン配合注
+ベネフィクス静注用
+ボトックス注用
+ポリミキシンＢ硫酸塩
+ボルベン輸液６％
+メピバカイン
+モルヒネ・アトロピン注射液
+ユニタルク胸膜腔内注入用懸濁剤４ｇ
+ラコールＮＦ配合経腸用液
+ラコールＮＦ配合経腸用半固形剤
+リコモジュリン点滴静注用
+リドカイン塩酸塩注
+リドカイン塩酸塩注射液
+リドカイン注
+リドカイン注射液
+リトドリン塩酸塩１％５ｍＬ注射液
+リトドリン塩酸塩点滴静注液
+リプルキット注
+リプル注
+リメタゾン静注２．５ｍｇ
+リンデロン懸濁注
+レギュニール　ＨＣａ
+レギュニール　ＬＣａ
+レフィキシア静注用
+レペタン注
+レミフェンタニル静注用
+レミフェンタニル静注用
+ローヘパ透析用
+ロピバカイン
+亜酸化窒素
+乾燥濃縮人血液凝固第１０因子加活性化第７因子
+混合型インスリン
+持効型インスリン
+次没食子酸ビスマス
+弱アヘンアルカロイド・スコポラミン注射液
+水溶性プレドニン
+静注用フローラン
+速効型インスリン
+中間型インスリン
+注射用チアミラールナトリウム
+注射用プレドニゾロンコハク酸エステルナトリウム
+超速効型インスリン
+腹膜透析液
+複方オキシコドン・アトロピン
+複方オキシコドン注射液
+肺炎球菌ワクチン
+メンクアッドフィ筋注
+アクトヒブ　１０μｇ（溶解液付）
+タイフィム　ブイアイ注シリンジ
+ロタリックス内用液
+乾燥組織培養不活化狂犬病ワクチン
+組換え沈降Ｂ型肝炎ワクチン（酵母由来）　０．２５ｍＬ
+乾燥弱毒生おたふくかぜワクチン「タケダ」
+乾燥弱毒生風しんワクチン「タケダ」
+乾燥弱毒生麻しんワクチン「タケダ」
+乾燥弱毒生水痘ワクチン「ビケン」
+ビケンＨＡ
+エイムゲン
+乾燥細胞培養痘そうワクチンＬＣ１６「ＫＭＢ」
+黄熱ワクチン１人用
+ジェービックＶ
+サーバリックス
+イモバックスポリオ皮下注
+シングリックス筋注用
+コミナティＲＴＵ筋注１人用
+ヌバキソビッド筋注
+アレックスビー筋注用
+タイコバック水性懸濁筋注０．５ｍＬ
+フルミスト点鼻液
+沈降破傷風トキソイド　１０ｍＬ
+ＤＴビック
+トリビック
+テトラビック皮下注シリンジ
+ゴービック水性懸濁注シリンジ
+ミールビック
+ロタテック内用液
+ビームゲン注０．２５ｍＬ
+おたふくかぜ生ワクチン「第一三共」
+インフルエンザＨＡワクチン「生研」
+エンセバック皮下注用
+ガーダシル水性懸濁筋注シリンジ
+コミナティＲＴＵ筋注５～１１歳用１人用
+タイコバック小児用水性懸濁筋注０．２５ｍＬ
+アブリスボ筋注用
+沈降破傷風トキソイド　０．５ｍＬ
+クアトロバック皮下注シリンジ
+クイントバック水性懸濁注射用
+乾燥弱毒生麻しん風しん混合ワクチン「タケダ」
+組換え沈降Ｂ型肝炎ワクチン（酵母由来）　０．５ｍＬ
+インフルエンザＨＡワクチン「ＫＭＢ」
+シルガード９水性懸濁筋注シリンジ
+コミナティ筋注シリンジ１２歳以上用
+沈降破傷風トキソイド「生研」
+ヒブトロバック水性懸濁注射用
+はしか風しん混合生ワクチン「第一三共」
+ビームゲン注０．５ｍＬ
+インフルエンザＨＡワクチン「第一三共」１ｍＬ
+コミナティ筋注６ヵ月～４歳用３人用
+破トキ「ビケンＦ」
+ミールビックＩＩ皮下注用
+ヘプタバックス－ＩＩ水性懸濁注シリンジ０．２５ｍＬ
+フルービックＨＡ
+スパイクバックス筋注
+ヘプタバックス－ＩＩ水性懸濁注シリンジ０．５ｍＬ
+インフルエンザＨＡワクチン「第一三共」シリンジ０．５ｍＬ
+ダイチロナ筋注
+組換え沈降Ｂ型肝炎ワクチン（チャイニーズハムスター卵巣細胞由来）
+インフルエンザＨＡワクチン「第一三共」シリンジ０．２５ｍＬ
+コスタイベ筋注用
+エフルエルダ筋注
+
+`; // EXCL_MARKER_END
+
+// --- 定数定義 ---
+const EXTERNAL_KEYWORDS = ["点眼", "眼軟膏", "軟膏", "クリーム", "ゲル", "ローション", "パップ", "貼付", "テープ", "坐剤", "坐薬", "吸入", "トローチ", "うがい", "スプレー"];
+const EXTERNAL_KEYWORDS_OVERRIDE = EXTERNAL_KEYWORDS;
+const NG_KEYWORDS = ["薬効名称", "院内", "分１", "分２", "分３", "分４", "分５", "１日", "1日", "回", "食後", "食前", "朝", "昼", "夕", "眠前", "Rp", "Ｒｐ", "RP", "rp"];
+
+const DATE_RULES = {
+    "1日前": { days: -1, alert: true },
+    "1週間": { days: -7, alert: true },
+    "2週間": { days: -14, alert: true },
+    "7日前": { days: -7, alert: true },
+    "2日": { days: -2, alert: true },
+    "2日前": { days: -2, alert: true },
+    "3日前": { days: -3, alert: true },
+    "28日前": { days: -28, alert: true },
+    "前日(1日前)": { days: -1, alert: true },
+    "当日": { days: 0, alert: true },
+    "24時間前": { text: "{date} 手術予定時刻の24時間前から休薬", alert: true },
+    "24時間以上": { text: "{date} 手術予定時刻の24時間以上前から休薬", alert: true },
+    "48時間前": { text: "{date} 手術予定時刻の48時間前から休薬", alert: true },
+    "5日以上前": { text: "{d5}より前から休薬", alert: true },
+    "1～3日": { days: [-3, -1], alert: true },
+    "3〜7日": { days: [-7, -3], alert: true },
+    "7～10 日前": { days: [-10, -7], alert: true },
+    "4～6週間": { days: [-42, -28], alert: true },
+    "手術前４週､術後２週": { days: [-28, 14], alert: true },
+    "前後2日": { days: [-2, 2], alert: true },
+    "糖尿病3日前/心不全当日": { text: "{d3} または {date}", alert: true },
+    "資料参照": { text: "要確認", alert: true },
+    "院内推奨期間なし": { text: "院内推奨期間なし", alert: false, css: "row-gray" },
+    "-": { text: "-", alert: false },
+    "対象外": { text: "-", alert: false },
+    "ｵﾋﾟｵｲﾄﾞ投与1週間前": { text: "-", alert: false },
+    "継続を推奨": { text: "-", alert: false },
+    "歯科手術２カ月前": { text: "-", alert: false },
+    "主治医判断": { text: "-", alert: false },
+    "長期不動状態の３日前": { text: "長期不動開始の3日前", alert: true }
+};
+
+const AC_MATRIX = {
+    "warfarin_dental": { h: "継続下での施行推奨<br><span style='font-size:0.9rem'>（治療域内確認）</span>", l: "継続下での施行推奨<br><span style='font-size:0.9rem'>（治療域内確認）</span>", hd: 0, ld: 0 },
+    "warfarin_minor":  { h: "休薬なし<br><span style='font-size:0.9rem'>（治療域内確認）</span>", l: "休薬なし<br><span style='font-size:0.9rem'>（治療域内確認）</span>", hd: 0, ld: 0 },
+    "warfarin_major":  { h: "【休薬期間】3〜5日<br><div class='bridge-info'>中止翌日よりヘパリン置換</div>", l: "【休薬期間】3〜5日", hd: [3,5], ld: [3,5] },
+    "warfarin_spinal": { h: "【休薬期間】5日<br><div class='bridge-info'>中止翌日よりヘパリン置換</div><div style='font-size:0.8rem;margin-top:5px'>※穿刺手技前にPT-INR<1.2を確認</div>", l: "穿刺手技前に、PT-INR<1.2を確認する<br><span style='font-size:0.8rem'>（低リスク群では休薬なし）</span>", hd: 5, ld: 0 },
+    "doac_pe_dental": { h: "継続下での施行推奨", l: "継続下での施行推奨", hd: 0, ld: 0 },
+    "doac_pe_minor":  { h: "【休薬期間】1日<br><div class='bridge-info'>プラザキサ：継続下で施行するが、trough aPTT>80秒の場合は、緊急性のない手術は避ける</div>", l: "【休薬期間】1日<br><span style='font-size:0.8rem'>ワーファリンに準ずる</span>", hd: 1, ld: 1 },
+    "doac_pe_major":  { h: "【休薬期間】2日<br><div class='bridge-info'>プラザキサ・エリキュース：最終投与12時間後よりヘパリン置換</div>", l: "【休薬期間】2日", hd: 2, ld: 2 },
+    "doac_pe_spinal": { h: "【休薬期間】<br>プラザキサ 4日(CrCl≧60)〜5日(30<CrCl<60)<br>エリキュース 3日<br><div class='bridge-info'>プラザキサ・エリキュース：最終投与12時間後よりヘパリン置換</div>", l: "低リスク群では出血時に圧迫による止血対応が可能であることから、仮に休薬する場合には休薬期間を半減期の2倍程度に留めることが合理的である", hd: [3,5], ld: 0 },
+    "doac_il_dental": { h: "継続下での施行推奨", l: "継続下での施行推奨", hd: 0, ld: 0 },
+    "doac_il_minor":  { h: "【休薬期間】1日", l: "【休薬期間】1日", hd: 1, ld: 1 },
+    "doac_il_major":  { h: "【休薬期間】1日<br><div class='bridge-info'>イグザレルト・リクシアナ：最終投与12時間後よりヘパリン置換</div>", l: "【休薬期間】1日", hd: 1, ld: 1 },
+    "doac_il_spinal": { h: "【休薬期間】2日<br><div class='bridge-info'>イグザレルト・リクシアナ：最終投与24時間後よりヘパリン置換</div>", l: "低リスク群では出血時に圧迫による止血対応が可能であることから、仮に休薬する場合には休薬期間を半減期の2倍程度に留めることが合理的である", hd: 2, ld: 0 },
+    "platelet_main_dental": { h: "継続下での施行を原則とする", l: "継続下での施行を原則とする", hd: 0, ld: 0 },
+    "platelet_main_minor":  { h: "継続下での施行を原則とする", l: "継続下での施行を原則とする", hd: 0, ld: 0 },
+    "platelet_main_major":  { h: "【休薬期間】7日<br><span style='font-size:0.9rem'>(バイアスピリン・パナルジン・クロピドグレル・エフィエント)</span><br><div class='bridge-info'>中止翌日よりヘパリン置換</div>", l: "【休薬期間】7日<br><div class='bridge-info'>場合によって、中止翌日よりヘパリン置換</div>", hd: 7, ld: 7 },
+    "platelet_main_spinal": { h: "【休薬期間】7日<br><div class='bridge-info'>（必要に応じて、）中止翌日よりヘパリン置換</div>", l: "低リスク群では休薬なし", hd: 7, ld: 0 },
+    "platelet_cilo_dental": { h: "継続下での施行を原則とする", l: "継続下での施行を原則とする", hd: 0, ld: 0 },
+    "platelet_cilo_minor":  { h: "継続下での施行を原則とする", l: "継続下での施行を原則とする", hd: 0, ld: 0 },
+    "platelet_cilo_major":  { h: "【休薬期間】シロスタゾール 2日<br><div class='bridge-info'>中止翌日よりヘパリン置換</div>", l: "【休薬期間】2日<br><div class='bridge-info'>場合によって、中止翌日よりヘパリン置換</div>", hd: 2, ld: 2 },
+    "platelet_cilo_spinal": { h: "【休薬期間】シロスタゾール 2日<br><div class='bridge-info'>（必要に応じて、）中止翌日よりヘパリン置換</div>", l: "低リスク群では休薬なし", hd: 2, ld: 0 }
+};
+
+const PROTOCOL_DEFS = {
+    warfarin: { high: "<div class='risk-list'><div class='hanging-item'>・心原性脳塞栓症の既往</div><div class='hanging-item'>・弁膜症を合併する心房細動</div><div class='hanging-item'>・弁膜症ではないが脳卒中の高リスク心房細動</div><div class='hanging-item'>・機械弁置換術後の血栓塞栓症の既往</div><div class='hanging-item'>・僧帽弁の機械弁置換術後</div><div class='hanging-item'>・抗リン脂質抗体症候群</div><div class='hanging-item'>・深部静脈血栓症・肺塞栓症</div></div>", low: "高リスク病態以外" },
+    doac: { high: "<div class='risk-list'><div class='hanging-item'>・心原性脳塞栓症の既往</div><div class='hanging-item'>・弁膜症を合併する心房細動</div><div class='hanging-item'>・弁膜症ではないが脳卒中の高リスク心房細動</div><div class='hanging-item'>・機械弁置換術後の血栓塞栓症の既往</div><div class='hanging-item'>・僧帽弁の機械弁置換術後</div><div class='hanging-item'>・抗リン脂質抗体症候群</div><div class='hanging-item'>・深部静脈血栓症・肺塞栓症</div></div>", low: "高リスク病態以外" },
+    platelet: { high: "<div class='risk-list'><div class='hanging-item'>・冠動脈ステント留置後2ヶ月以内</div><div class='hanging-item'>・冠動脈薬剤溶出性ステント留置後12ヶ月以内</div><div class='hanging-item'>・脳血行再建術後2ヶ月以内</div><div class='hanging-item'>・主幹動脈に50%以上の狭窄を伴う脳梗塞又は一過性脳虚血発作</div><div class='hanging-item'>・最近発症した虚血性脳卒中又は一過性脳虚血発作</div><div class='hanging-item'>・閉塞性動脈硬化症でFontaine3度(安静時疼痛)以上</div><div class='hanging-item'>・頸動脈エコー又は頭頸部MRIで、休薬は危険が高いとされる所見を有する</div></div>", low: "高リスク病態以外" }
+};
+const FOOTER_TEXTS = {
+    warfarin: "<strong>ヘパリン置換を行った場合のヘパリン中止時期：</strong><br>ワーファリン再開1〜2日後に中止（中止時効果確認）。<br>（ワーファリン再開5日目以降、至適INR回復の確認を行う）",
+    doac: "<strong>ヘパリン置換を行った場合のヘパリン中止時期：</strong><br>持続静注時（未分画ヘパリン）：DOAC投与開始時に中止。<br>皮下注時（クレキサン等）：<br>・プラザキサは次回皮下注製剤投与2時間前に投与開始、次回皮下注製剤の投与中止。<br>・イグザレルトは次回皮下注製剤投与0〜2時間前に投与開始。<br>・エリキュース/リクシアナは次回皮下注製剤投与時間に投与開始。",
+    platelet: "<strong>ヘパリン置換を行った場合のヘパリン中止時期：</strong><br>抗血小板剤再開3〜4日後に中止"
+};
+const DRUG_DISPLAY_NAMES = {
+    'warfarin': 'ワルファリンカリウム <span style="font-size:0.8rem; font-weight:normal; color:#555;">(商品名: ワーファリン)</span>',
+    'doac_pe': 'ダビガトラン / アピキサバン <br><span style="font-size:0.8rem; font-weight:normal; color:#555;">(商品名: プラザキサ / エリキュース)</span>',
+    'doac_il': 'リバーロキサバン / エドキサバン <br><span style="font-size:0.8rem; font-weight:normal; color:#555;">(商品名: イグザレルト / リクシアナ)</span>',
+    'platelet_main': '抗血小板薬（主要薬）<br><span style="font-size:0.8rem; font-weight:normal; color:#555;">(アスピリン, クロピドグレル, プラスグレル等)<br>(商品名: バイアスピリン, パナルジン, プラビックス, エフィエント等)</span>',
+    'platelet_cilo': 'シロスタゾール <span style="font-size:0.8rem; font-weight:normal; color:#555;">(商品名: プレタール)</span>'
+};
+
+// グローバル変数
+let masterData = [];
+let currentDrug = null;
+let currentSurgery = null;
+
+function init() {
+    document.getElementById("headerDateDisplay").textContent = DATA_UPDATED;
+    parseMasterData(rawMasterData);
+    
+    const citations = {
+        "1": "糖尿病治療におけるSGLT2阻害薬の適正使用に関する Recommendation",
+        "2": "手術などを行う際の抗凝固薬・抗血小板薬取り扱いの参考目安(院内ポータル)",
+        "3": "添付文書",
+        "4": "骨吸収抑制薬関連顎骨壊死の病態と管理 : 顎骨壊死検討委員会ポジションペーパー 2016",
+        "5": "NCCNガイドライン：結腸癌ガイドライン・直腸癌ガイドライン",
+        "6": "医薬品適正使用ガイド",
+        "7": "医薬品インタビューフォーム",
+        "8": "製薬企業ホームページ",
+        "9": "当院代謝内分泌内科より",
+        "10": "当院麻酔科より",
+        "11": "心不全治療におけるSGLT2阻害薬の適正使用に関するRecommendation",
+        "12": "半減期から判断"
+    };
+    let cHtml = "";
+    for (const [key, val] of Object.entries(citations)) { cHtml += `<li class="citation-item">[${key}] ${val}</li>`; }
+    document.getElementById("citationList").innerHTML = `<ul class="citation-list">${cHtml}</ul>`;
+    document.getElementById("printCitationList").innerHTML = `<ul class="citation-list">${cHtml}</ul>`;
+    
+    filterMasterTable();
+}
+
+function parseMasterData(rawData) {
+    masterData = [];
+    const lines = rawData.trim().split("\n");
+    let isHeaderFound = false;
+    for (const line of lines) {
+        const tLine = line.trim();
+        if(!tLine) continue;
+        if (tLine.startsWith("分類")) { isHeaderFound = true; continue; }
+        if (!isHeaderFound) continue;
+        const cols = tLine.split("\t");
+        if (cols.length < 3) continue;
+
+        const brand = cols[2].trim();
+        const generic = cols[3].trim();
+        let keys = [];
+        if (brand) keys.push(brand);
+        if (generic) keys.push(generic);
+        const brandClean = stripManufacturer(brand);
+        if (brandClean !== brand && brandClean.length > 1) keys.push(brandClean);
+
+        const searchString = keys.join(" ") + " " + (cols[0] || "") + " " + (cols[1] || "");
+        
+        masterData.push({
+            type: cols[0] || "",
+            type2: cols[1] || "",
+            brandName: brand,
+            genericName: generic,
+            period: cols[4] || "",
+            ref: cols[5] || "",
+            reason: cols[6] || "",
+            searchKeys: keys,
+            normalizedSearchStr: normalizeString(searchString)
+        });
+    }
+}
+
+// -----------------------------------------------------------
+// テキスト整理・判定用共通関数
+// -----------------------------------------------------------
+function normalizeString(str) {
+    if (!str) return "";
+    let s = str;
+    // 英数字を半角に
+    s = s.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+    // スペース削除
+    s = s.replace(/　/g, " ").replace(/\s/g, "");
+    // 半角カナを全角に
+    s = s.replace(/[\u3041-\u3096]/g, m => String.fromCharCode(m.charCodeAt(0) + 0x60));
+    s = s.replace(/．/g, '.');
+    const kanaMap = {
+        'ｶﾞ':'ガ', 'ｷﾞ':'ギ', 'ｸﾞ':'グ', 'ｹﾞ':'ゲ', 'ｺﾞ':'ゴ', 'ｻﾞ':'ザ', 'ｼﾞ':'ジ', 'ｽﾞ':'ズ', 'ｾﾞ':'ゼ', 'ｿﾞ':'ゾ',
+        'ﾀﾞ':'ダ', 'ﾁﾞ':'ヂ', 'ﾂﾞ':'ヅ', 'ﾃﾞ':'デ', 'ﾄﾞ':'ド', 'ﾊﾞ':'バ', 'ﾋﾞ':'ビ', 'ﾌﾞ':'ブ', 'ﾍﾞ':'ベ', 'ﾎﾞ':'ボ',
+        'ﾊﾟ':'パ', 'ﾋﾟ':'ピ', 'ﾌﾟ':'プ', 'ﾍﾟ':'ペ', 'ﾎﾟ':'ポ', 'ｳﾞ':'ヴ', 'ﾜﾞ':'ヷ', 'ｦﾞ':'ヺ',
+        'ｱ':'ア', 'ｲ':'イ', 'ｳ':'ウ', 'ｴ':'エ', 'ｵ':'オ', 'ｶ':'カ', 'ｷ':'キ', 'ｸ':'ク', 'ｹ':'ケ', 'ｺ':'コ',
+        'ｻ':'サ', 'ｼ':'シ', 'ｽ':'ス', 'ｾ':'セ', 'ｿ':'ソ', 'ﾀ':'タ', 'ﾁ':'チ', 'ﾂ':'ツ', 'ﾃ':'テ', 'ﾄ':'ト',
+        'ﾅ':'ナ', 'ﾆ':'ニ', 'ﾇ':'ヌ', 'ﾈ':'ネ', 'ﾉ':'ノ', 'ﾊ':'ハ', 'ﾋ':'ヒ', 'ﾌ':'フ', 'ﾍ':'ヘ', 'ﾎ':'ホ',
+        'ﾏ':'マ', 'ﾐ':'ミ', 'ﾑ':'ム', 'ﾒ':'メ', 'ﾓ':'モ', 'ﾔ':'ヤ', 'ﾕ':'ユ', 'ﾖ':'ヨ',
+        'ﾗ':'ラ', 'ﾘ':'リ', 'ﾙ':'ル', 'ﾚ':'レ', 'ﾛ':'ロ', 'ﾜ':'ワ', 'ｦ':'ヲ', 'ﾝ':'ン',
+        'ｧ':'ァ', 'ｨ':'ィ', 'ｩ':'ゥ', 'ｪ':'ェ', 'ｫ':'ォ', 'ｯ':'ッ', 'ｬ':'ャ', 'ｭ':'ュ', 'ｮ':'ョ',
+        '｡':'。', '､':'、', 'ｰ':'ー', '｢':'「', '｣':'」', '･':'・'
+    };
+    const reg = new RegExp('(' + Object.keys(kanaMap).join('|') + ')', 'g');
+    s = s.replace(reg, m => kanaMap[m]);
+    return s.toUpperCase(); 
+}
+
+function stripManufacturer(str) {
+    if (!str) return "";
+    let pos = str.indexOf("｢");
+    if(pos > -1) str = str.substring(0, pos);
+    pos = str.indexOf("(");
+    if(pos > -1) str = str.substring(0, pos);
+    pos = str.indexOf("「");
+    if(pos > -1) str = str.substring(0, pos);
+    pos = str.indexOf("（");
+    if(pos > -1) str = str.substring(0, pos);
+    return str.replace(/\s/g, "");
+}
+
+function isSeparator(char) {
+    if(!char) return false;
+    if(/[0-9０-９]/.test(char)) return true;
+    if(char === "(" || char === "｢" || char === "（" || char === "「") return true;
+    const forms = "ＡＢＨＬ錠カ散顆細点注射軟液シ貼坐眼耳鼻キクテホハABHL";
+    if(forms.includes(char)) return true;
+    return false;
+}
+
+function isExcluded(targetStr, arrExcl) {
+    if(!targetStr || arrExcl.length === 0) return false;
+    for(const word of arrExcl) {
+        if(!word) continue;
+        if(targetStr.startsWith(word)) {
+            if(targetStr.length === word.length) return true;
+            const nextChar = targetStr.charAt(word.length);
+            if(isSeparator(nextChar)) return true;
+        }
+    }
+    return false;
+}
+
+function cleanDrugName(rawText) {
+    if (!rawText || rawText.trim() === "") return null;
+    let name = rawText.trim().replace(/（[^）]+）/g, "").replace(/^[\s　]+/, "");
+    const splitMatch = name.match(/^([^\s　「]+)/);
+    if(splitMatch) name = splitMatch[1];
+    
+    // 不要文字・スラッシュ削除
+    name = name.replace("★", "").replace("（医療用）", "").replace(/[／\/]/g, "");
+    
+    // 組文字などの特殊文字を標準文字に置換
+    name = name.replace(/㎎/g, "mg").replace(/㎍/g, "μg").replace(/㎖/g, "ml").replace(/㌘/g, "g");
+    
+    // 半角化
+    name = name.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+    name = name.replace(/．/g, ".");
+    
+    // 剤形や塩を境界とした規格の削除
+    const boundaries = [
+        "OD錠", "ＯＤ錠", "錠", "カプセル", "散", "顆粒", "細粒", "シロップ", "ドライシロップ", "液",
+        "テープ", "パップ", "クリーム", "軟膏", "ゲル", "ローション", "坐剤", "坐薬",
+        "塩酸塩", "硫酸塩", "リン酸塩", "マレイン酸塩", "クエン酸塩", "フマル酸塩", "メシル酸塩", "ベシル酸塩", "トシル酸塩", 
+        "ナトリウム", "カリウム", "カルシウム"
+    ];
+    
+    for (const b of boundaries) {
+        const reg = new RegExp("(" + b + ")[\\s]*[0-9][\\s\\S]*$");
+        if (reg.test(name)) {
+            name = name.replace(reg, "$1");
+            break; 
+        }
+    }
+
+    // 境界キーワードがない場合の規格単位削除
+    name = name.replace(/[0-9]+(\.[0-9]+)?[\s]*(mg|g|ml|μg|mcg)/gi, "");
+
+    return name.trim();
+}
+
+function findMatchingDrug(line, cleanedName) {
+    const normLine = normalizeString(line);
+    let bestMatch = null;
+    let maxLen = 0;
+
+    masterData.forEach(data => {
+        data.searchKeys.forEach(key => {
+            const normKey = normalizeString(key);
+            if (normLine.indexOf(normKey) !== -1 || (cleanedName && normalizeString(cleanedName).indexOf(normKey) !== -1)) {
+                if (key.length > maxLen) {
+                    maxLen = key.length;
+                    bestMatch = data;
+                }
+            }
+        });
+    });
+    return bestMatch;
+}
+
+// -----------------------------------------------------------
+// タブ1: 判定処理
+// -----------------------------------------------------------
+function determineRowStatus(m, hasDate, sDateStr) {
+    let rowClass = "row-none";
+    let calcText = "-";
+
+    if (m) {
+        if (hasDate) {
+            const res = calculateStopDateStrict(m.period, sDateStr);
+            calcText = res.text;
+            rowClass = res.alert ? "row-alert" : (res.css || "");
+        } else {
+            // 手術日未定時の判定
+            if (m.period.includes("院内推奨期間なし")) {
+                rowClass = "row-gray";
+                calcText = "院内推奨期間なし";
+            } else if (m.period === "-" || m.period === "対象外") {
+                rowClass = "row-none";
+                calcText = m.period;
+            } else {
+                if (m.period.indexOf("④") !== -1 || m.period.indexOf("参照") !== -1) {
+                    calcText = "院内プロトコル(別紙)参照";
+                } else {
+                    calcText = m.period;
+                }
+                rowClass = "row-alert";
+            }
+        }
+    }
+    
+    return { rowClass, calcText };
+}
+
+function processData() {
+    const rawInput = document.getElementById("rawInput").value;
+    const surgeryDateStr = document.getElementById("surgeryDate").value;
+    const hasDate = !!surgeryDateStr;
+    const dateText = hasDate ? new Date(surgeryDateStr).toLocaleDateString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit'}) : "未設定";
+    document.getElementById("printDateDisplay_Check").textContent = "手術予定日：" + dateText;
+    
+    document.querySelectorAll(".col-calc").forEach(el => {
+        el.style.display = hasDate ? "" : "none";
+    });
+
+    const lines = rawInput.split("\n");
+    let hasRp = false, hasIndent = false;
+    for (const line of lines) {
+        if (/Rp|Ｒｐ|RP|rp/i.test(line)) { hasRp = true; break; }
+        const check = line.replace(/　/g, " ");
+        if (check.length - check.trimStart().length >= 2 && line.trim()) hasIndent = true;
+    }
+    const mode = hasRp ? "StrictRp" : (hasIndent ? "Indent" : "Simple");
+    
+    let isPrevRp = false;
+    const results = [];
+
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        let keep = false;
+        if (mode === "StrictRp") {
+            const isRp = /Rp|Ｒｐ|RP|rp/i.test(line);
+            if (isPrevRp && !isRp) keep = true;
+            isPrevRp = isRp;
+        } else if (mode === "Indent") {
+            const check = line.replace(/　/g, " ");
+            const isIndent = (check.length - check.trimStart().length >= 2);
+            if (isIndent && !NG_KEYWORDS.some(n => line.includes(n))) keep = true;
+        } else {
+            if (!NG_KEYWORDS.some(n => line.includes(n))) keep = true;
+        }
+
+        if (keep) {
+            const cleaned = cleanDrugName(line);
+            const bestMatch = findMatchingDrug(line, cleaned);
+
+            if (bestMatch) {
+                let isExternalOverride = false;
+                for (const kw of EXTERNAL_KEYWORDS_OVERRIDE) {
+                    if (line.includes(kw)) {
+                        const inBrand = bestMatch.brandName.includes(kw);
+                        const inGeneric = bestMatch.genericName.includes(kw);
+                        if (!inBrand && !inGeneric) { isExternalOverride = true; }
+                        break;
+                    }
+                }
+                if (isExternalOverride) {
+                    const overrideData = { ...bestMatch };
+                    overrideData.period = "-";
+                    overrideData.reason = "外用剤のため全身への影響は少ない";
+                    results.push({ name: cleaned || trimmed, data: overrideData });
+                } else {
+                    results.push({ name: cleaned || trimmed, data: bestMatch });
+                }
+            } else {
+                results.push({ name: cleaned || trimmed, data: null });
+            }
+        }
+    });
+    renderResults(results, hasDate, surgeryDateStr);
+}
+
+function calculateStopDateStrict(period, sDateStr) {
+    if (period.indexOf("④") !== -1 || period.indexOf("参照") !== -1) { 
+        return { text: "院内プロトコル(別紙)参照", alert: true }; 
+    }
+    const rule = DATE_RULES[period];
+    if (rule) {
+        if (rule.text && !rule.text.includes("{")) return { text: rule.text, alert: rule.alert, css: rule.css };
+        const sDate = new Date(sDateStr);
+        const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+        const add = n => { const x = new Date(sDate); x.setDate(x.getDate() + n); return x; };
+        
+        if (rule.text) {
+             let txt = rule.text.replace("{date}", fmt(sDate));
+             if(txt.includes("{d3}")) txt = txt.replace("{d3}", fmt(add(-3)));
+             if(txt.includes("{d5}")) txt = txt.replace("{d5}", fmt(add(-5)));
+             return { text: txt, alert: rule.alert };
+        }
+        if (Array.isArray(rule.days)) {
+            return { text: `${fmt(add(rule.days[0]))}～${fmt(add(rule.days[1]))}`, alert: rule.alert };
+        } else {
+            return { text: fmt(add(rule.days)), alert: rule.alert };
+        }
+    }
+    return { text: "-", alert: false };
+}
+
+function renderResults(results, hasDate, sDateStr) {
+    const tbody = document.querySelector("#resultTable tbody");
+    const pBody = document.querySelector("#printResultTable tbody");
+    tbody.innerHTML = ""; pBody.innerHTML = "";
+    if (results.length === 0) {
+        const emptyRow = '<tr><td colspan="6" class="text-center text-muted py-4">有効なデータなし</td></tr>';
+        tbody.innerHTML = emptyRow;
+        pBody.innerHTML = emptyRow;
+        return;
+    }
+
+    results.forEach((r, idx) => {
+        const m = r.data;
+        const status = determineRowStatus(m, hasDate, sDateStr);
+        const rowClass = status.rowClass;
+        const calcText = status.calcText;
+
+        const trS = document.createElement("tr"); trS.className = rowClass;
+        const trP = document.createElement("tr"); trP.className = rowClass;
+
+        if (m) {
+            const editHtml = `
+                <div class="edit-container">
+                    <div class="editable-cell" contenteditable="true" data-original="${calcText}" data-print-id="p-cell-${idx}" oninput="checkEdit(this)">${calcText}</div>
+                    <button class="btn btn-outline-secondary btn-quick-set no-print" onclick="setNoDrug(this)">なし</button>
+                    <button class="btn btn-outline-secondary btn-quick-set no-print" onclick="resetPeriod(this)">↺</button>
+                    <span class="edit-mark">📝</span>
+                </div>`;
+            
+            let printCalcText = calcText;
+            if (printCalcText.includes("糖尿病3日前/心不全当日")) {
+                printCalcText = printCalcText.replace("糖尿病3日前/心不全当日", "糖尿病3日前<br>心不全当日");
+            }
+            
+            const printHtml = `<span id="p-cell-${idx}" data-original="${calcText}" style="white-space:pre-wrap; word-break:break-all;">${printCalcText}</span><span class="edit-mark edit-mark-print" style="display:none;margin-left:5px;color:#dc3545;">📝</span>`;
+
+            trS.innerHTML = `<td class="fw-bold">${r.name}</td><td class="small">${m.type}</td><td class="small">${m.period}</td><td class="fw-bold" style="${hasDate?'':'display:none;'}">${editHtml}</td><td class="small">${m.reason}</td><td class="small text-center">${m.ref}</td>`;
+            
+            let printPeriod = m.period;
+            if (printPeriod.includes("糖尿病3日前/心不全当日")) {
+                printPeriod = printPeriod.replace("糖尿病3日前/心不全当日", "糖尿病3日前<br>心不全当日");
+            }
+            
+            trP.innerHTML = `<td class="fw-bold">${r.name}</td><td class="small">${m.type}</td><td class="small">${printPeriod}</td><td class="fw-bold" style="${hasDate?'':'display:none;'}">${printHtml}</td><td class="small">${m.reason}</td><td class="small text-center">${m.ref}</td>`;
+        } else {
+            const emptyHtml = `<td>${r.name}</td><td class="small text-muted">-</td><td class="small text-muted">指定なし</td><td class="small text-muted" style="${hasDate?'':'display:none;'}">-</td><td class="small text-muted">指定なし</td><td class="small text-muted">-</td>`;
+            trS.innerHTML = emptyHtml;
+            trP.innerHTML = emptyHtml;
+        }
+        tbody.appendChild(trS); pBody.appendChild(trP);
+    });
+}
+
+// -----------------------------------------------------------
+// タブ4: プロトコル
+// -----------------------------------------------------------
+function selectAC(type, val, btn) {
+    if(type === 'drug') currentDrug = val;
+    if(type === 'surgery') currentSurgery = val;
+    const group = type === 'drug' ? 'drug-buttons' : 'surgery-buttons';
+    document.querySelectorAll(`#${group} button`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    updateACDisplay();
+}
+function setACDrug(type, btn) { selectAC('drug', type, btn); }
+function setACSurgery(type, btn) { selectAC('surgery', type, btn); }
+
+function updateACDisplay() {
+    if(!currentDrug || !currentSurgery) return;
+    document.getElementById('ac-result-area').style.display = 'block';
+
+    const titleEl = document.querySelector('#ac-result-area h3');
+    const drugNameHtml = DRUG_DISPLAY_NAMES[currentDrug] || "";
+    titleEl.innerHTML = `推奨される対応（病態リスク別）<div style="margin-top:5px; font-size:0.9rem; font-weight:normal;">対象薬剤: ${drugNameHtml}</div>`;
+
+    const key = currentDrug + "_" + currentSurgery;
+    const data = AC_MATRIX[key];
+    
+    document.getElementById('high-risk-action').innerHTML = data.h;
+    document.getElementById('low-risk-action').innerHTML = data.l;
+
+    let defKey = currentDrug.startsWith('doac') ? 'doac' : (currentDrug.startsWith('platelet') ? 'platelet' : 'warfarin');
+    document.getElementById('high-risk-def').innerHTML = PROTOCOL_DEFS[defKey].high;
+    document.getElementById('low-risk-def').innerHTML = PROTOCOL_DEFS[defKey].low;
+    document.getElementById('footer-text').innerHTML = FOOTER_TEXTS[defKey];
+    document.getElementById('footer-note').style.display = 'block';
+
+    const sVal = document.getElementById('ac-surgery-date').value;
+    const hSch = document.getElementById('high-schedule');
+    const lSch = document.getElementById('low-schedule');
+    
+    if(sVal) {
+        hSch.style.display = 'block'; lSch.style.display = 'block';
+        hSch.innerHTML = getAcScheduleText(data.hd, sVal);
+        lSch.innerHTML = getAcScheduleText(data.ld, sVal);
+    } else {
+        hSch.style.display = 'none'; lSch.style.display = 'none';
+    }
+    document.getElementById('ac-result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function getAcScheduleText(days, sDateVal) {
+    if(!sDateVal || days === 0) return "";
+    const sDate = new Date(sDateVal);
+    const fmt = d => (d.getMonth() + 1) + '/' + d.getDate();
+    const add = n => { const x = new Date(sDate); x.setDate(x.getDate() - n); return x; };
+    
+    if (Array.isArray(days)) {
+        return `${fmt(add(days[1]))}～${fmt(add(days[0]))}から休薬`;
+    } else {
+        return `${fmt(add(days))}から休薬`;
+    }
+}
+
+// -----------------------------------------------------------
+// タブ2: スケジュール計算
+// -----------------------------------------------------------
+function calcScheduleTab() {
+    const dStr = document.getElementById("scheduleDateInput").value;
+    const area = document.getElementById("scheduleResultArea");
+    if (!dStr) { area.innerHTML = ""; return; }
+    
+    document.getElementById("printScheduleDateDisplay").textContent = "手術予定日：" + new Date(dStr).toLocaleDateString('ja-JP');
+    
+    const sDate = new Date(dStr);
+    const fmt = d => `${d.getMonth()+1}/${d.getDate()} (${["日","月","火","水","木","金","土"][d.getDay()]})`;
+    const add = n => { const x = new Date(sDate); x.setDate(x.getDate() + n); return x; };
+    
+    const addMonth = m => {
+        const x = new Date(sDate);
+        x.setMonth(x.getMonth() + m);
+        return x;
+    };
+
+    const patterns = [
+        { l: "2ヶ月前", func: () => addMonth(-2) },
+        { l: "6週間前", d: -42 },
+        { l: "4週間前", d: -28 },
+        { l: "2週間前", d: -14 },
+        { l: "1週間前", d: -7 }, 
+        { l: "7日前", d: -7 }, 
+        { l: "5日以上前", d: -5 },
+        { l: "3日前", d: -3 }, 
+        { l: "2日前", d: -2 }, 
+        { l: "前日(1日前)", d: -1 },
+        { l: "手術当日", d: 0 }, 
+        { l: "術後2週", d: 14 }
+    ];
+    
+    let highlightDates = {};
+    
+    let h = `<div class="timeline-wrapper">`;
+    h += `<div class="timeline-container"><table class="timeline-table"><thead><tr><th class="timeline-date-col">日付</th><th class="timeline-content-col">休薬・対応</th></tr></thead><tbody>`;
+    patterns.forEach(p => {
+        let dateObj;
+        if (p.func) {
+            dateObj = p.func();
+        } else {
+            dateObj = add(p.d);
+        }
+        
+        let dateStr = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}-${dateObj.getDate()}`;
+        if(p.d === 0) {
+            highlightDates[dateStr] = { class: "cal-surgery", label: "手術" };
+        } else {
+            highlightDates[dateStr] = { class: "cal-mark", label: p.l.replace("手術前","").replace("前","") };
+        }
+
+        h += `<tr class="${p.d===0?'timeline-row-today':''}"><td class="timeline-date-col">${fmt(dateObj)}</td><td class="timeline-content-col">${p.l}</td></tr>`;
+    });
+    h += `</tbody></table></div>`;
+    
+    h += `<div class="calendar-container"><div class="cal-wrapper">`;
+    h += generateCalendarHTML(new Date(sDate.getFullYear(), sDate.getMonth() - 1, 1), highlightDates);
+    h += generateCalendarHTML(new Date(sDate.getFullYear(), sDate.getMonth(), 1), highlightDates);
+    h += `</div></div>`;
+    
+    h += `</div>`;
+    area.innerHTML = h;
+}
+
+function generateCalendarHTML(baseDate, highlights) {
+    const year = baseDate.getFullYear();
+    const month = baseDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    
+    let html = `<div class="cal-month"><div class="cal-header">${year}年 ${month+1}月</div>`;
+    html += `<div class="cal-grid">`;
+    
+    const days = ["日","月","火","水","木","金","土"];
+    days.forEach(d => html += `<div class="cal-day-header">${d}</div>`);
+    
+    for(let i=0; i<firstDay; i++) { html += `<div class="cal-cell"></div>`; }
+    
+    for(let d=1; d<=lastDate; d++) {
+        const currentKey = `${year}-${month+1}-${d}`;
+        const hl = highlights[currentKey];
+        let className = "cal-cell";
+        let content = d;
+        
+        if(hl) {
+            className += ` ${hl.class}`;
+            content += `<span class="cal-mark-desc">${hl.label}</span>`;
+        }
+        
+        html += `<div class="${className}">${content}</div>`;
+    }
+    
+    html += `</div></div>`;
+    return html;
+}
+
+function filterMasterTable() {
+    const txt = document.getElementById("masterSearch").value;
+    const tbody = document.getElementById("masterTableBody");
+    tbody.innerHTML = "";
+    const norm = normalizeString(txt);
+    const kws = norm.trim().split(" ").filter(k=>k);
+    
+    masterData.forEach(row => {
+        if (kws.length === 0 || kws.some(k => row.normalizedSearchStr.includes(k))) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td class="cell-nowrap">${row.type}</td><td class="fw-bold text-primary cell-nowrap">${row.brandName}</td><td class="cell-wrap">${row.genericName}</td><td>${row.period}</td><td class="small">${row.reason}</td>`;
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => {
+        if(el.getAttribute('data-target') === tabId || el.getAttribute('onclick').includes(tabId)) {
+            el.classList.add('active');
+        }
+    });
+    
+    document.querySelectorAll('.tab-pane').forEach(el => {
+        el.classList.remove('show', 'active');
+        el.style.display = 'none';
+    });
+    
+    const target = document.getElementById(tabId);
+    if(target) {
+        target.classList.add('show', 'active');
+        target.style.display = 'block';
+    }
+    if(tabId === 'master-tab') filterMasterTable();
+}
+
+window.onscroll = function() { document.getElementById("backToTop").style.display = (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) ? "block" : "none"; };
+
+// -----------------------------------------------------------
+// タブ5: データベース管理・新規薬剤抽出 (Ver40.1 修正)
+// -----------------------------------------------------------
+
+function extractNewDrugs() {
+    const sourceText = document.getElementById("searchResultInput").value;
+    if(!sourceText.trim()) {
+        alert("検索結果(処方リスト)を貼り付けてください。");
+        return;
+    }
+    
+    // 除外リストの配列を作成
+    const arrExclusion = rawExclusionData.trim().split("\n").map(s => normalizeString(s.trim())).filter(s => s);
+    
+    const lines = sourceText.split("\n");
+    if(lines.length < 2) {
+        alert("データが不足しています。ヘッダー行を含めて貼り付けてください。");
+        return;
+    }
+    
+    // ヘッダー行の解析
+    const headers = lines[0].split("\t");
+    const colName = headers.indexOf("薬品名称") > -1 ? headers.indexOf("薬品名称") : 0;
+    const colIng = headers.indexOf("成分") > -1 ? headers.indexOf("成分") : 3; 
+    const colPre = headers.indexOf("術前");
+    const colPost = headers.indexOf("術後");
+    const colCom = headers.indexOf("コメント");
+    const colMech = headers.indexOf("作用機序");
+    
+    const outputMap = new Map(); // 重複排除用
+    const results = [];
+    
+    for(let i=1; i<lines.length; i++) {
+        const line = lines[i].trim();
+        if(!line) continue;
+        const cols = line.split("\t");
+        
+        const sName = cols[colName] || "";
+        const sIng = cols[colIng] || "";
+        
+        // 抽出用のクリーンアップ (判定タブと同じ処理)
+        const cleanedName = cleanDrugName(sName);
+        
+        let isSkip = false;
+        if(!sName) isSkip = true;
+        
+        // 1. 既存チェック (判定タブと同じ部分一致・境界判定ロジックを使用)
+        if(!isSkip) {
+            const bestMatch = findMatchingDrug(line, cleanedName);
+            if(bestMatch) {
+                isSkip = true;
+            }
+        }
+        
+        // 2. 除外リストチェック (前方一致 + 境界チェック)
+        if(!isSkip && arrExclusion.length > 0) {
+            const checkNameNorm = normalizeString(sName);
+            const checkIngNorm = normalizeString(sIng);
+            if(isExcluded(checkNameNorm, arrExclusion)) isSkip = true;
+            if(!isSkip && checkIngNorm && isExcluded(checkIngNorm, arrExclusion)) isSkip = true;
+        }
+        
+        // 3. 出力重複チェック
+        if(!isSkip && sIng) {
+            if(outputMap.has(sIng)) isSkip = true;
+        }
+        
+        // 抽出
+        if(!isSkip) {
+            const pre = colPre > -1 ? (cols[colPre] || "") : "";
+            const post = colPost > -1 ? (cols[colPost] || "") : "";
+            const com = colCom > -1 ? (cols[colCom] || "") : "";
+            const mech = colMech > -1 ? (cols[colMech] || "") : "";
+            
+            results.push({ status: "新規", name: sName, ing: sIng, pre: pre, post: post, com: com, mech: mech });
+            if(sIng) outputMap.set(sIng, true);
+        }
+    }
+    
+    // 描画
+    const tbody = document.querySelector("#extractResultTable tbody");
+    tbody.innerHTML = "";
+    if(results.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">新規候補なし</td></tr>';
+        alert("新規候補はありませんでした。");
+        return;
+    }
+    
+    results.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="fw-bold text-danger">${r.status}</td>
+            <td class="cell-wrap">${r.name}</td>
+            <td class="cell-wrap">${r.ing}</td>
+            <td>${r.pre}</td>
+            <td>${r.post}</td>
+            <td class="small cell-wrap">${r.com}</td>
+            <td class="small">${r.mech}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    alert(`${results.length}件の新規候補を抽出しました。`);
+}
+
+function getCleanHTML() {
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.querySelector('a[data-target="check-tab"]').classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(el => {
+        el.classList.remove('show', 'active');
+        el.style.display = 'none';
+    });
+    const checkTab = document.getElementById('check-tab');
+    checkTab.classList.add('show', 'active');
+    checkTab.style.display = 'block';
+
+    document.querySelector("#resultTable tbody").innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">データを入力して「判定実行」を押してください</td></tr>';
+    document.querySelector("#printResultTable tbody").innerHTML = "";
+    document.getElementById("rawInput").value = "";
+    document.getElementById("surgeryDate").value = "";
+    document.getElementById("printDateDisplay_Check").textContent = "手術予定日：未設定";
+    
+    document.getElementById("scheduleDateInput").value = "";
+    document.getElementById("scheduleResultArea").innerHTML = "";
+    document.getElementById("printScheduleDateDisplay").textContent = "手術予定日：未設定";
+    
+    document.getElementById("masterSearch").value = "";
+    document.getElementById("masterTableBody").innerHTML = "";
+    
+    document.getElementById("searchResultInput").value = "";
+    document.getElementById("newMasterInput").value = "";
+    document.getElementById("newExclInput").value = "";
+    document.querySelector("#extractResultTable tbody").innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">処方リストを貼り付けて「新規候補を抽出」を押してください</td></tr>';
+
+    document.querySelectorAll('#ac-wrapper button').forEach(b => b.classList.remove('selected'));
+    document.getElementById('ac-result-area').style.display = 'none';
+    document.getElementById('ac-surgery-date').value = "";
+
+    return "<!DOCTYPE html>\n<html lang=\"ja\">\n" + document.documentElement.innerHTML + "\n</html>";
+}
+
+function downloadNewVersion() {
+    const newMaster = document.getElementById('newMasterInput').value;
+    const newExcl = document.getElementById('newExclInput').value;
+    const newVer = document.getElementById('newVersionInput').value || "40.1";
+    
+    if(!newMaster || !newExcl) {
+        alert("マスタデータと除外リストの両方を入力してください。");
+        return;
+    }
+    
+    try {
+        let html = getCleanHTML();
+        
+        const masterStart = "const rawMasterData = `";
+        const masterEnd = "`; // DATA_MARKER_END";
+        const mStartIdx = html.indexOf(masterStart);
+        const mEndIdx = html.indexOf(masterEnd);
+        if(mStartIdx > -1 && mEndIdx > -1) {
+            html = html.substring(0, mStartIdx + masterStart.length) + "\n" + newMaster + "\n" + html.substring(mEndIdx);
+        }
+        
+        const exclStart = "const rawExclusionData = `";
+        const exclEnd = "`; // EXCL_MARKER_END";
+        const eStartIdx = html.indexOf(exclStart);
+        const eEndIdx = html.indexOf(exclEnd);
+        if(eStartIdx > -1 && eEndIdx > -1) {
+            html = html.substring(0, eStartIdx + exclStart.length) + "\n" + newExcl + "\n" + html.substring(eEndIdx);
+        }
+        
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}.${mm}.${dd}`;
+        
+        const dateUpdatedReg = /const DATA_UPDATED = "[^"]*";/;
+        html = html.replace(dateUpdatedReg, `const DATA_UPDATED = "Ver${newVer} (${dateStr})";`);
+        
+        const titleReg = /<title>術前休薬確認ツール Ver[^<]*<\/title>/g;
+        html = html.replace(titleReg, `<title>術前休薬確認ツール Ver40</title>`);
+        
+        const h3Reg = /<h3 class="fw-bold m-0" style="font-size:18px;">🏥 術前休薬確認ツール Ver[^<]*<\/h3>/g;
+        html = html.replace(h3Reg, `<h3 class="fw-bold m-0" style="font-size:18px;">🏥 術前休薬確認ツール Ver40</h3>`);
+        
+        const blob = new Blob([html], {type: "text/html;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `kyuyaku_tool.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert("新しいバージョンのファイルを作成しました！\nダウンロードフォルダを確認し、共有フォルダ等に上書き配置してください。");
+        
+    } catch(e) {
+        alert("ファイルの生成に失敗しました: " + e);
+    }
+}
+
+window.onload = init;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
